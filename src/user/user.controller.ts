@@ -11,8 +11,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/CreateUserDto';
 import { CustomValidationResponse } from 'src/shared/pipes/CustomValidationResponse.pipe';
 import { LoginUserDto } from './dto/LoginUser.dto';
-import { UserCreatedSuccessResponse } from './types/UserCreatedSuccessResponse.interface';
-import { LoginType } from './types/LoginType';
+import { UserResponse } from './types/UserResponse.interface';
 import { Response } from 'express';
 import { Cookies } from './decorators/cookie.decorator';
 import { User } from './decorators/user.decorator';
@@ -26,10 +25,8 @@ export class UserController {
 
   @Post()
   @UsePipes(new CustomValidationResponse())
-  async createUser(
-    @Body() createUserDto: CreateUserDto,
-  ): Promise<UserCreatedSuccessResponse> {
-    return await this.userService.createUser(createUserDto);
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<void> {
+    await this.userService.createUser(createUserDto);
   }
 
   @Post('/login')
@@ -37,17 +34,17 @@ export class UserController {
   async loginUser(
     @Res({ passthrough: true }) response: Response,
     @Body() loginUserDto: LoginUserDto,
-  ): Promise<LoginType> {
+  ): Promise<UserResponse> {
     const userToken = await this.userService.loginUser(loginUserDto);
     response.cookie('refreshToken', userToken.refreshToken, cookieOptions);
-    return { accessToken: userToken.accessToken };
+    return userToken;
   }
 
   @Get('/refresh')
   async refreshToken(
     @Cookies('refreshToken') refreshToken: string,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<LoginType> {
+  ): Promise<Pick<UserResponse, 'accessToken'>> {
     const token = await this.userService.refreshToken(refreshToken);
     response.cookie('refreshToken', token.refreshToken, cookieOptions);
     return { accessToken: token.accessToken };
@@ -57,10 +54,9 @@ export class UserController {
   async logoutUser(
     @User('id') currentUserId: number,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<UserCreatedSuccessResponse> {
-    const logoutStatus = await this.userService.logoutUser(currentUserId);
+  ): Promise<void> {
+    await this.userService.logoutUser(currentUserId);
     response.clearCookie('refreshToken', cookieOptions);
-    return logoutStatus;
   }
 
   @Get('/currentUser')
