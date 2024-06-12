@@ -8,12 +8,6 @@ export class UserEntity {
   @Column()
   email: string;
 
-  @Column()
-  username: string;
-
-  @Column({ default: '' })
-  bio: string;
-
   @Column({ default: '' })
   image: string;
 
@@ -22,6 +16,12 @@ export class UserEntity {
 
   @Column({ default: '' })
   refreshToken: string;
+
+  @Column({ default: '' })
+  firstName: string;
+
+  @Column({ default: '' })
+  lastName: string;
 
   @BeforeInsert()
   async hashPassword() {

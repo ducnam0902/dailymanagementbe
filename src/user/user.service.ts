@@ -10,9 +10,8 @@ import { DataSource, Repository } from 'typeorm';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from './dto/CreateUserDto';
 import { LoginUserDto } from './dto/LoginUser.dto';
-import { UserCreatedSuccessResponse } from './types/UserCreatedSuccessResponse.interface';
 import { ConfigService } from '@nestjs/config';
-import { GenerateTokenInterface } from './types/GenerateToken.interface';
+import { JwtToken, UserResponse } from './types/userResponse.interface';
 
 @Injectable()
 export class UserService {
@@ -24,19 +23,13 @@ export class UserService {
     private readonly configService: ConfigService,
   ) {}
 
-  async createUser(
-    createUserDto: CreateUserDto,
-  ): Promise<UserCreatedSuccessResponse> {
+  async createUser(createUserDto: CreateUserDto): Promise<void> {
     const newUser = new UserEntity();
     Object.assign(newUser, createUserDto);
-    const userCreated = await this.userRepository.save(newUser);
-    const returnResponse = {
-      status: `New user ${userCreated.email} created!`,
-    };
-    return returnResponse;
+    await this.userRepository.save(newUser);
   }
 
-  async loginUser(loginUserDto: LoginUserDto): Promise<GenerateTokenInterface> {
+  async loginUser(loginUserDto: LoginUserDto): Promise<UserResponse> {
     const user = await this.dataSource
       .getRepository(UserEntity)
       .createQueryBuilder('user')
@@ -62,31 +55,37 @@ export class UserService {
     }
     const token = await this.generateJwt(user);
     user.refreshToken = token.refreshToken;
-    await this.userRepository.save(user);
-    return token;
+    const data = await this.userRepository.save(user);
+
+    return {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      image: data.image,
+      ...token,
+    };
   }
 
-  async generateJwt(user: UserEntity): Promise<GenerateTokenInterface> {
+  async generateJwt(user: UserEntity): Promise<JwtToken> {
     const jwtPayload = {
       id: user.id,
-      username: user.username,
       email: user.email,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {
-        expiresIn: '10s',
+        expiresIn: '1h',
         secret: this.configService.get('ACCESS_KEY'),
       }),
       this.jwtService.signAsync(jwtPayload, {
         secret: this.configService.get('REFRESH_KEY'),
-        expiresIn: '1h',
+        expiresIn: '1d',
       }),
     ]);
     return { accessToken, refreshToken };
   }
 
-  async refreshToken(token: string): Promise<GenerateTokenInterface> {
+  async refreshToken(token: string): Promise<JwtToken> {
     const user = await this.userRepository.findOne({
       where: { refreshToken: token },
     });
@@ -117,7 +116,7 @@ export class UserService {
     return newToken;
   }
 
-  async logoutUser(userId: number): Promise<UserCreatedSuccessResponse> {
+  async logoutUser(userId: number): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -131,9 +130,6 @@ export class UserService {
     }
     const newUser = { ...user, refreshToken: '' };
     await this.userRepository.save(newUser);
-    return {
-      status: 'Logout succesffully',
-    };
   }
 
   async getCurrentUser(currentUserId: number): Promise<UserEntity> {
