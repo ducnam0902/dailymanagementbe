@@ -1,8 +1,7 @@
 import {
   ArgumentMetadata,
-  HttpException,
-  HttpStatus,
   PipeTransform,
+  UnauthorizedException,
   ValidationError,
 } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
@@ -20,10 +19,7 @@ export class CustomValidationResponse implements PipeTransform {
     if (errors.length === 0) {
       return value;
     }
-    throw new HttpException(
-      { errors: this.formatError(errors) },
-      HttpStatus.UNPROCESSABLE_ENTITY,
-    );
+    throw new UnauthorizedException(this.formatError(errors));
   }
 
   formatError(error: ValidationError[]) {

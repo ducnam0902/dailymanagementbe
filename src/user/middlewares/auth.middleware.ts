@@ -13,7 +13,7 @@ export class AuthMiddleware implements NestMiddleware {
     private jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
-  async use(req: ExpressRequest, _: Response, next: NextFunction) {
+  async use(req: ExpressRequest, res: Response, next: NextFunction) {
     if (!req.get('authorization')) {
       req.user = null;
       next();

@@ -1,5 +1,7 @@
 import {
+  ConflictException,
   ForbiddenException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -10,7 +12,6 @@ import { DataSource, Repository } from 'typeorm';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from './dto/CreateUserDto';
 import { LoginUserDto } from './dto/LoginUser.dto';
-import { ConfigService } from '@nestjs/config';
 import { JwtToken, UserResponse } from './types/userResponse.interface';
 
 @Injectable()
@@ -20,13 +21,24 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     private readonly dataSource: DataSource,
     private jwtService: JwtService,
-    private readonly configService: ConfigService,
   ) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<void> {
     const newUser = new UserEntity();
-    Object.assign(newUser, createUserDto);
-    await this.userRepository.save(newUser);
+    const user = await this.userRepository.findOne({
+      where: {
+        email: createUserDto.email,
+      },
+    });
+
+    if (!user) {
+      Object.assign(newUser, createUserDto);
+      await this.userRepository.save(newUser);
+    } else {
+      throw new ConflictException({
+        email: 'Email has already exists',
+      });
+    }
   }
 
   async loginUser(loginUserDto: LoginUserDto): Promise<UserResponse> {
@@ -39,7 +51,7 @@ export class UserService {
 
     if (!user) {
       throw new UnauthorizedException({
-        errors: { email: 'Invalid email or password' },
+        email: 'Invalid email or password',
       });
     }
 
@@ -50,13 +62,12 @@ export class UserService {
 
     if (!isPasswordCorrect) {
       throw new UnauthorizedException({
-        errors: { email: 'Invalid email or password' },
+        password: 'Invalid password',
       });
     }
     const token = await this.generateJwt(user);
     user.refreshToken = token.refreshToken;
     const data = await this.userRepository.save(user);
-
     return {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -71,14 +82,13 @@ export class UserService {
       id: user.id,
       email: user.email,
     };
-
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {
         expiresIn: '1h',
-        secret: this.configService.get('ACCESS_KEY'),
+        secret: process.env.ACCESS_KEY,
       }),
       this.jwtService.signAsync(jwtPayload, {
-        secret: this.configService.get('REFRESH_KEY'),
+        secret: process.env.REFRESH_KEY,
         expiresIn: '1d',
       }),
     ]);
@@ -92,18 +102,17 @@ export class UserService {
 
     if (!user || !token) {
       throw new ForbiddenException({
-        errors: {
-          message: 'Forbidden',
-        },
+        message: 'Forbidden',
       });
     }
 
     const verifyUser = await this.jwtService.verifyAsync(token, {
-      secret: this.configService.get('REFRESH_KEY'),
+      secret: process.env.REFRESH_KEY,
     });
 
     if (verifyUser.id !== user.id) {
       throw new ForbiddenException({
+        statusCode: HttpStatus.FORBIDDEN,
         errors: {
           message: 'Forbidden',
         },
@@ -123,9 +132,7 @@ export class UserService {
 
     if (!user) {
       throw new ForbiddenException({
-        errors: {
-          message: 'Forbidden',
-        },
+        message: 'Forbidden',
       });
     }
     const newUser = { ...user, refreshToken: '' };
