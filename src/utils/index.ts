@@ -4,5 +4,5 @@ export const cookieOptions: CookieOptions = {
   httpOnly: true,
   sameSite: 'none',
   secure: true,
-  maxAge: 1 * 60 * 60,
+  maxAge: 60 * 1000 * 60 * 60,
 };
