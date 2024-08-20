@@ -12,7 +12,7 @@ import { DataSource, Repository } from 'typeorm';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from './dto/CreateUserDto';
 import { LoginUserDto } from './dto/LoginUser.dto';
-import { JwtToken, UserResponse } from './types/userResponse.interface';
+import { JwtToken, UserResponse } from './types/UserResponse.interface';
 
 @Injectable()
 export class UserService {
