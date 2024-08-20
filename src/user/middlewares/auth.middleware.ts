@@ -21,10 +21,10 @@ export class AuthMiddleware implements NestMiddleware {
     }
     const token = req.get('authorization').split(' ')[1];
     try {
-      const decode = await this.jwtService.decode(
-        token,
-        this.configService.get('ACCESS_KEY'),
-      );
+      const decode = await this.jwtService.verify(token, {
+        secret: this.configService.get('ACCESS_KEY_SECRET'),
+        ignoreExpiration: false,
+      });
       const user = await this.userService.getCurrentUser(decode.id);
       req.user = user;
       next();

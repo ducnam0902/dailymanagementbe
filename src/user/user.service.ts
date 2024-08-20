@@ -12,7 +12,7 @@ import { DataSource, Repository } from 'typeorm';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from './dto/CreateUserDto';
 import { LoginUserDto } from './dto/LoginUser.dto';
-import { JwtToken, UserResponse } from './types/userResponse.interface';
+import { JwtToken, UserResponse } from './types/UserResponse.interface';
 
 @Injectable()
 export class UserService {
@@ -84,12 +84,12 @@ export class UserService {
     };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {
-        expiresIn: '1h',
-        secret: process.env.ACCESS_KEY,
+        expiresIn: process.env.ACCESS_KEY_EXPIRATION,
+        secret: process.env.ACCESS_KEY_SECRET,
       }),
       this.jwtService.signAsync(jwtPayload, {
-        secret: process.env.REFRESH_KEY,
-        expiresIn: '1d',
+        secret: process.env.REFRESH_KEY_EXPIRATION,
+        expiresIn: process.env.REFRESH_KEY_EXPIRATION,
       }),
     ]);
     return { accessToken, refreshToken };
@@ -107,7 +107,7 @@ export class UserService {
     }
 
     const verifyUser = await this.jwtService.verifyAsync(token, {
-      secret: process.env.REFRESH_KEY,
+      secret: process.env.REFRESH_KEY_EXPIRATION,
     });
 
     if (verifyUser.id !== user.id) {
