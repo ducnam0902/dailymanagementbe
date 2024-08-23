@@ -6,6 +6,10 @@ import {
   Res,
   UseGuards,
   UsePipes,
+  BadRequestException,
+  Param,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/CreateUserDto';
@@ -18,7 +22,8 @@ import { User } from './decorators/user.decorator';
 import { cookieOptions } from 'src/utils';
 import { AuthGuard } from './guards/auth.guards';
 import { UserType } from './types/UserType';
-
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -65,5 +70,44 @@ export class UserController {
     const user = await this.userService.getCurrentUser(currentUserId);
     delete user.refreshToken;
     return user;
+  }
+
+  @Post('upload-image')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const name = file.originalname.split('.')[0];
+          const fileExtension = file.originalname.split('.')[1];
+          const newFileName =
+            name.split(' ').join('_') + '_' + Date.now() + '.' + fileExtension;
+          cb(null, newFileName);
+        },
+      }),
+      fileFilter: (req, file, callback) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+          return callback(null, false);
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  uploadPhoto(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('File is not an image');
+    } else {
+      const response = {
+        filePath: `${process.env.PUBLIC_API_ENDPOINT}/user/image/${file.filename}`,
+      };
+      return response;
+    }
+  }
+
+  @Get('image/:filename')
+  async getPicture(@Param('filename') filename, @Res() res: Response) {
+    res.sendFile(filename, {
+      root: './uploads',
+    });
   }
 }
