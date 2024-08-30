@@ -19,7 +19,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       keyOfResponseException[0] === 'message'
     ) {
       response.status(status).json({
-        statusCode: status,
         errors: {
           message: responseException[keyOfResponseException[0]],
         },
@@ -31,7 +30,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }));
 
       response.status(status).json({
-        statusCode: status,
         errors: mappingErrorField,
       });
     }
