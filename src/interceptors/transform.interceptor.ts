@@ -7,7 +7,6 @@ import {
 import { map, Observable } from 'rxjs';
 
 export interface Response<T> {
-  statusCode: number;
   data: T;
 }
 
@@ -21,7 +20,6 @@ export class TransformationInterceptor<T>
   ): Observable<Response<T>> {
     return next.handle().pipe(
       map((data) => ({
-        statusCode: context.switchToHttp().getResponse().statusCode,
         data: data,
       })),
     );

@@ -1,7 +1,6 @@
 import {
   ConflictException,
   ForbiddenException,
-  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -112,10 +111,7 @@ export class UserService {
 
     if (verifyUser.id !== user.id) {
       throw new ForbiddenException({
-        statusCode: HttpStatus.FORBIDDEN,
-        errors: {
-          message: 'Forbidden',
-        },
+        message: 'Forbidden',
       });
     }
 
