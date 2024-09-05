@@ -6,7 +6,6 @@ import config from './ormconfig';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthMiddleware } from './user/middlewares/auth.middleware';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { TransformationInterceptor } from './interceptors/transform.interceptor';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './http-exception.filter';
 @Module({
@@ -23,10 +22,6 @@ import { HttpExceptionFilter } from './http-exception.filter';
   ],
   controllers: [],
   providers: [
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformationInterceptor,
-    },
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
