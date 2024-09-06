@@ -22,7 +22,9 @@ export class UserService {
     private jwtService: JwtService,
   ) {}
 
-  async createUser(createUserDto: CreateUserDto): Promise<void> {
+  async createUser(
+    createUserDto: CreateUserDto,
+  ): Promise<Omit<UserResponse, 'accessToken' | 'refreshToken'>> {
     const newUser = new UserEntity();
     const user = await this.userRepository.findOne({
       where: {
@@ -32,7 +34,13 @@ export class UserService {
 
     if (!user) {
       Object.assign(newUser, createUserDto);
-      await this.userRepository.save(newUser);
+      const data = await this.userRepository.save(newUser);
+      return {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        image: data.image,
+      };
     } else {
       throw new ConflictException({
         email: 'Email has already exists',
