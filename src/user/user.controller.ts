@@ -30,8 +30,15 @@ export class UserController {
 
   @Post()
   @UsePipes(new CustomValidationResponse())
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<void> {
-    await this.userService.createUser(createUserDto);
+  async createUser(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<{ message: string }> {
+    const response = await this.userService.createUser(createUserDto);
+    if (!!response.email) {
+      return {
+        message: 'User created!',
+      };
+    }
   }
 
   @Post('/login')
