@@ -21,7 +21,7 @@ import { Cookies } from './decorators/cookie.decorator';
 import { User } from './decorators/user.decorator';
 import { cookieOptions } from 'src/utils';
 import { AuthGuard } from './guards/auth.guards';
-import { UserType } from './types/UserType';
+import { UserLogoutStatus, UserType } from './types/UserType';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 @Controller('user')
@@ -66,9 +66,10 @@ export class UserController {
   async logoutUser(
     @User('id') currentUserId: number,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<void> {
-    await this.userService.logoutUser(currentUserId);
+  ): Promise<UserLogoutStatus> {
+    const result = await this.userService.logoutUser(currentUserId);
     response.clearCookie('refreshToken', cookieOptions);
+    return result;
   }
 
   @Get('/currentUser')
