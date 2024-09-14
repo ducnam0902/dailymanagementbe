@@ -12,6 +12,7 @@ import { compare } from 'bcrypt';
 import { CreateUserDto } from './dto/CreateUserDto';
 import { LoginUserDto } from './dto/LoginUser.dto';
 import { JwtToken, UserResponse } from './types/UserResponse.interface';
+import { UserLogoutStatus } from './types/UserType';
 
 @Injectable()
 export class UserService {
@@ -129,7 +130,7 @@ export class UserService {
     return newToken;
   }
 
-  async logoutUser(userId: number): Promise<void> {
+  async logoutUser(userId: number): Promise<UserLogoutStatus> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -141,6 +142,9 @@ export class UserService {
     }
     const newUser = { ...user, refreshToken: '' };
     await this.userRepository.save(newUser);
+    return {
+      ok: true,
+    };
   }
 
   async getCurrentUser(currentUserId: number): Promise<UserEntity> {
