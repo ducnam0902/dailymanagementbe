@@ -15,6 +15,7 @@ import {
 import { User } from 'src/user/decorators/user.decorator';
 import { UserEntity } from 'src/user/user.entity';
 import { NoteEntity } from './note.entity';
+import { ResponseCreatedData } from 'src/utils';
 
 @Controller('note')
 export class NoteController {
@@ -26,13 +27,17 @@ export class NoteController {
   async createNote(
     @Body() createNoteDto: CreateNoteDto,
     @User() user: UserEntity,
-  ): Promise<{ message: string }> {
+  ): Promise<ResponseCreatedData> {
     const response = await this.noteService.createNote(user, createNoteDto);
     if (response?.id) {
       return {
-        message: 'Note created!',
+        ok: true,
       };
     }
+
+    return {
+      ok: false,
+    };
   }
 
   @Get(':date')
