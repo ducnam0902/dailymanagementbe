@@ -19,7 +19,7 @@ import { UserResponse } from './types/UserResponse.interface';
 import { Response } from 'express';
 import { Cookies } from './decorators/cookie.decorator';
 import { User } from './decorators/user.decorator';
-import { cookieOptions } from 'src/utils';
+import { cookieOptions, ResponseCreatedData } from 'src/utils';
 import { AuthGuard } from './guards/auth.guards';
 import { UserLogoutStatus, UserType } from './types/UserType';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -32,13 +32,17 @@ export class UserController {
   @UsePipes(new CustomValidationResponse())
   async createUser(
     @Body() createUserDto: CreateUserDto,
-  ): Promise<{ message: string }> {
+  ): Promise<ResponseCreatedData> {
     const response = await this.userService.createUser(createUserDto);
     if (!!response.email) {
       return {
-        message: 'User created!',
+        ok: true,
       };
     }
+
+    return {
+      ok: false,
+    };
   }
 
   @Post('/login')

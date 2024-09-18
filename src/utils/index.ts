@@ -6,3 +6,7 @@ export const cookieOptions: CookieOptions = {
   secure: true,
   maxAge: 60 * 1000 * 60 * 60,
 };
+
+export type ResponseCreatedData = {
+  ok: boolean;
+};
