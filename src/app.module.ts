@@ -8,6 +8,7 @@ import { AuthMiddleware } from './user/middlewares/auth.middleware';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './http-exception.filter';
+import { NoteModule } from './note/note.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -19,6 +20,7 @@ import { HttpExceptionFilter } from './http-exception.filter';
     JwtModule.register({
       global: true,
     }),
+    NoteModule,
   ],
   controllers: [],
   providers: [
