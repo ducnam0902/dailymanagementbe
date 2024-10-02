@@ -68,7 +68,7 @@ export class UserController {
 
   @Get('/logout')
   async logoutUser(
-    @User('id') currentUserId: number,
+    @User('id') currentUserId: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<UserLogoutStatus> {
     const result = await this.userService.logoutUser(currentUserId);
@@ -78,7 +78,7 @@ export class UserController {
 
   @Get('/currentUser')
   @UseGuards(AuthGuard)
-  async getCurrentUser(@User('id') currentUserId: number): Promise<UserType> {
+  async getCurrentUser(@User('id') currentUserId: string): Promise<UserType> {
     const user = await this.userService.getCurrentUser(currentUserId);
     delete user.refreshToken;
     return user;

@@ -4,58 +4,47 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserEntity } from './user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { JwtService } from '@nestjs/jwt';
-import { DataSource, Repository } from 'typeorm';
 import { compare } from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { CreateRequestContext, EntityManager } from '@mikro-orm/postgresql';
+import { UserEntity } from './user.entity';
+
 import { CreateUserDto } from './dto/CreateUserDto';
 import { LoginUserDto } from './dto/LoginUser.dto';
+
 import { JwtToken, UserResponse } from './types/UserResponse.interface';
 import { UserLogoutStatus } from './types/UserType';
-
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
-    private readonly dataSource: DataSource,
     private jwtService: JwtService,
+    private readonly em: EntityManager,
   ) {}
-
+  @CreateRequestContext()
   async createUser(
     createUserDto: CreateUserDto,
   ): Promise<Omit<UserResponse, 'accessToken' | 'refreshToken'>> {
     const newUser = new UserEntity();
-    const user = await this.userRepository.findOne({
-      where: {
-        email: createUserDto.email,
-      },
+
+    const user = await this.em.findOne(UserEntity,{
+      email: createUserDto.email,
     });
 
     if (!user) {
       Object.assign(newUser, createUserDto);
-      const data = await this.userRepository.save(newUser);
-      return {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        image: data.image,
-      };
+      await this.em.persistAndFlush(newUser);
+      return newUser;
     } else {
       throw new ConflictException({
         email: 'Email has already exists',
       });
     }
   }
-
+  @CreateRequestContext()
   async loginUser(loginUserDto: LoginUserDto): Promise<UserResponse> {
-    const user = await this.dataSource
-      .getRepository(UserEntity)
-      .createQueryBuilder('user')
-      .where('user.email = :email', { email: loginUserDto.email })
-      .addSelect('user.password')
-      .getOne();
+    const user = await this.em.findOne(UserEntity, {
+      email: loginUserDto.email,
+    });
 
     if (!user) {
       throw new UnauthorizedException({
@@ -75,12 +64,9 @@ export class UserService {
     }
     const token = await this.generateJwt(user);
     user.refreshToken = token.refreshToken;
-    const data = await this.userRepository.save(user);
+    await this.em.persistAndFlush(user);
     return {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      image: data.image,
+      ...user,
       ...token,
     };
   }
@@ -102,10 +88,10 @@ export class UserService {
     ]);
     return { accessToken, refreshToken };
   }
-
+  @CreateRequestContext()
   async refreshToken(token: string): Promise<JwtToken> {
-    const user = await this.userRepository.findOne({
-      where: { refreshToken: token },
+    const user = await this.em.findOne(UserEntity,{
+      refreshToken: token,
     });
 
     if (!user || !token) {
@@ -126,13 +112,16 @@ export class UserService {
 
     const newToken = await this.generateJwt(user);
     user.refreshToken = newToken.refreshToken;
-    await this.userRepository.save(user);
+    await this.em.persistAndFlush(user);
     return newToken;
   }
 
-  async logoutUser(userId: number): Promise<UserLogoutStatus> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
+  @CreateRequestContext()
+  async logoutUser(userId: string): Promise<UserLogoutStatus> {
+    const user = await this.em.findOne(UserEntity,{
+      id: userId,
+    }, {
+      populate: ['notes']
     });
 
     if (!user) {
@@ -140,16 +129,18 @@ export class UserService {
         message: 'Forbidden',
       });
     }
-    const newUser = { ...user, refreshToken: '' };
-    await this.userRepository.save(newUser);
+    const newUserDto = this.em.create(UserEntity, { ...user, refreshToken: '' });
+    await this.em.persist(newUserDto).flush();
     return {
       ok: true,
     };
   }
 
-  async getCurrentUser(currentUserId: number): Promise<UserEntity> {
-    return await this.userRepository.findOne({
-      where: { id: currentUserId },
+  @CreateRequestContext()
+  async getCurrentUser(currentUserId: string): Promise<UserEntity> {
+    const users = await this.em.findOne(UserEntity,{
+      id: currentUserId,
     });
+    return users;
   }
 }

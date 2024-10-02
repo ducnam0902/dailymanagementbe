@@ -1,40 +1,29 @@
-import { UserEntity } from 'src/user/user.entity';
 import {
-  Column,
-  CreateDateColumn,
+  Property,
   Entity,
   ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { NoteType } from './types/noteType';
+  Enum,
+} from '@mikro-orm/postgresql';
 
-@Entity({ name: 'note' })
-export class NoteEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+import { UserEntity } from 'src/user/user.entity';
+import { BaseEntity } from '@/utils/base.entity';
+import { NoteType } from '@/utils';
 
-  @Column({ default: '' })
+
+@Entity({ tableName: 'note' })
+export class NoteEntity extends BaseEntity {
+
+  @Property({ default: '' })
   note: string;
 
-  @Column({ default: false })
+  @Property({ default: false })
   isCompleted: boolean;
 
-  @CreateDateColumn({ type: 'date' })
-  date: string;
-
-  @Column({
-    type: 'enum',
-    enum: [
-      'Activities',
-      'Development',
-      'New Routine',
-      'Planning',
-      'Shopping',
-      'Other',
-    ],
-  })
+  @Enum(() => NoteType)
   type: NoteType;
 
-  @ManyToOne(() => UserEntity, (user) => user.notes)
+  @ManyToOne()
   user: UserEntity;
 }
+
+

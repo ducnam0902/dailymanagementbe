@@ -10,3 +10,12 @@ export const cookieOptions: CookieOptions = {
 export type ResponseCreatedData = {
   ok: boolean;
 };
+
+export enum NoteType {
+  ACTIVITIES = 'ACTIVITIES',
+  DEVELOPMENT = 'DEVELOPMENT',
+  NEWROUTINE = 'NEWROUTINE',
+  PLANNING = 'PLANNING',
+  SHOPPING = 'SHOPPING',
+  OTHER = 'OTHER'
+}

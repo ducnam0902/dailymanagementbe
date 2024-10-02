@@ -1,40 +1,41 @@
+
+import { hash } from 'bcrypt';
 import {
-  BeforeInsert,
-  Column,
+  BeforeCreate,
+  Collection,
   Entity,
   OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { hash } from 'bcrypt';
-import { NoteEntity } from 'src/note/note.entity';
-@Entity({ name: 'users' })
-export class UserEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  Property,
+} from '@mikro-orm/postgresql';
 
-  @Column()
+import { NoteEntity } from 'src/note/note.entity';
+import { BaseEntity } from '@/utils/base.entity';
+@Entity({ tableName: 'users' })
+export class UserEntity extends BaseEntity {
+
+  @Property()
   email: string;
 
-  @Column({ default: '' })
+  @Property({ default: '', columnType: 'text' })
   image: string;
 
-  @Column({ select: false })
+  @Property()
   password: string;
 
-  @Column({ default: '' })
+  @Property({ default: '', columnType: 'text' })
   refreshToken: string;
 
-  @Column({ default: '' })
+  @Property({ default: '' })
   firstName: string;
 
-  @Column({ default: '' })
+  @Property({ default: '' })
   lastName: string;
 
-  @BeforeInsert()
+  @BeforeCreate()
   async hashPassword() {
     this.password = await hash(this.password, 10);
   }
 
   @OneToMany(() => NoteEntity, (note) => note.user)
-  notes: NoteEntity[];
+  notes = new Collection<UserEntity>(this)
 }

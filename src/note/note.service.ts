@@ -1,17 +1,14 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { NoteEntity } from './note.entity';
-import { Repository } from 'typeorm';
 import { CreateNoteDto } from './dto/CreateNoteDto';
 import { UserEntity } from 'src/user/user.entity';
-
+import { CreateRequestContext, EntityManager } from '@mikro-orm/postgresql';
 @Injectable()
 export class NoteService {
   constructor(
-    @InjectRepository(NoteEntity)
-    private readonly noteRepository: Repository<NoteEntity>,
+    private readonly em: EntityManager,
   ) {}
-
+  @CreateRequestContext()
   async createNote(
     user: UserEntity,
     createNoteDto: CreateNoteDto,
@@ -19,33 +16,29 @@ export class NoteService {
     const newNote = new NoteEntity();
     Object.assign(newNote, createNoteDto);
     newNote.user = user;
-    const data = await this.noteRepository.save(newNote);
-    return data;
+    console.log('user', user);
+    console.log('newNote', newNote);
+    await this.em.persistAndFlush(newNote);
+    return newNote;
   }
 
-  async getNote(userId: number, date: string): Promise<NoteEntity[]> {
-    const response = await this.noteRepository.find({
-      relations: {
-        user: false,
-      },
-      where: {
+  async getNote(userId: string, date: string): Promise<NoteEntity[]> {
+    const response = await this.em.find(NoteEntity, {
         user: {
           id: userId,
         },
-        date: date,
-      },
+        createdAt: date,
     });
+
     return response;
   }
 
-  async completeNote(userId: number, noteId: number): Promise<NoteEntity> {
-    const existedNote: NoteEntity = await this.noteRepository.findOne({
-      where: {
-        user: {
-          id: userId,
-        },
-        id: noteId,
+  async completeNote(userId: string, noteId: string): Promise<NoteEntity> {
+    const existedNote: NoteEntity = await this.em.findOne(NoteEntity, {
+      user: {
+        id: userId,
       },
+      id: noteId,
     });
     if (!existedNote) {
       throw new UnprocessableEntityException({
@@ -58,7 +51,7 @@ export class NoteService {
       isCompleted: true,
     };
 
-    const response = await this.noteRepository.save(completedNote);
-    return response;
+    await this.em.persistAndFlush(completedNote);
+    return completedNote;
   }
 }

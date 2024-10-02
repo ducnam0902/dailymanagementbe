@@ -1,21 +1,26 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
-import { UserModule } from './user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import config from './ormconfig';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthMiddleware } from './user/middlewares/auth.middleware';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
+
+
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './http-exception.filter';
+import { AuthMiddleware } from './user/middlewares/auth.middleware';
+
+import config from './mikro-orm.config';
+
+import { UserModule } from './user/user.module';
 import { NoteModule } from './note/note.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot(config),
+    MikroOrmModule.forRoot(config),
     UserModule,
     JwtModule.register({
       global: true,

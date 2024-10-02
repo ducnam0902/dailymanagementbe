@@ -43,7 +43,7 @@ export class NoteController {
   @Get(':date')
   @UseGuards(AuthGuard)
   async getAllNote(
-    @User('id') userId: number,
+    @User('id') userId: string,
     @Param('date') date: string,
   ): Promise<NoteEntity[]> {
     return await this.noteService.getNote(userId, date);
@@ -52,8 +52,8 @@ export class NoteController {
   @Put(':noteId')
   @UseGuards(AuthGuard)
   async completedNote(
-    @User('id') userId: number,
-    @Param('noteId') noteId: number,
+    @User('id') userId: string,
+    @Param('noteId') noteId: string,
   ): Promise<NoteEntity> {
     return await this.noteService.completeNote(userId, noteId);
   }

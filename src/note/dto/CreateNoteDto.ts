@@ -1,5 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
-import { NoteType } from '../types/noteType';
+import { NoteType } from '@/utils';
 
 export class CreateNoteDto {
   @IsNotEmpty({ message: 'Note is not empty' })
