@@ -34,15 +34,9 @@ export class UserController {
     @Body() createUserDto: CreateUserDto,
   ): Promise<ResponseCreatedData> {
     const response = await this.userService.createUser(createUserDto);
-    if (!!response.email) {
-      return {
-        ok: true,
-      };
-    }
-
     return {
-      ok: false,
-    };
+      ok: !!response.id,
+    }
   }
 
   @Post('/login')

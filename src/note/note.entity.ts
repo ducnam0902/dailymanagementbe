@@ -5,6 +5,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn
 } from 'typeorm';
 import { NoteType } from './types/noteType';
 
@@ -19,8 +20,11 @@ export class NoteEntity {
   @Column({ default: false })
   isCompleted: boolean;
 
-  @CreateDateColumn({ type: 'date' })
-  date: string;
+  @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+  createdAt: string;
+  
+  @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+  updatedAt: string;
 
   @Column({
     type: 'enum',

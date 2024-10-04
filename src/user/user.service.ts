@@ -23,9 +23,15 @@ export class UserService {
     private jwtService: JwtService,
   ) {}
 
+  async getCurrentUser(currentUserId: number): Promise<UserEntity> {
+    return await this.userRepository.findOne({
+      where: { id: currentUserId },
+    });
+  }
+
   async createUser(
     createUserDto: CreateUserDto,
-  ): Promise<Omit<UserResponse, 'accessToken' | 'refreshToken'>> {
+  ): Promise<UserEntity> {
     const newUser = new UserEntity();
     const user = await this.userRepository.findOne({
       where: {
@@ -35,13 +41,8 @@ export class UserService {
 
     if (!user) {
       Object.assign(newUser, createUserDto);
-      const data = await this.userRepository.save(newUser);
-      return {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        image: data.image,
-      };
+      const data = await this.userRepository.insert(newUser);
+      return data.raw[0];
     } else {
       throw new ConflictException({
         email: 'Email has already exists',
@@ -74,13 +75,9 @@ export class UserService {
       });
     }
     const token = await this.generateJwt(user);
-    user.refreshToken = token.refreshToken;
-    const data = await this.userRepository.save(user);
+    await this.userRepository.update(user.id, {refreshToken:  token.refreshToken});
     return {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      image: data.image,
+      ...user,
       ...token,
     };
   }
@@ -125,15 +122,12 @@ export class UserService {
     }
 
     const newToken = await this.generateJwt(user);
-    user.refreshToken = newToken.refreshToken;
-    await this.userRepository.save(user);
+    await this.userRepository.update(user.id, { refreshToken: newToken.refreshToken});
     return newToken;
   }
 
   async logoutUser(userId: number): Promise<UserLogoutStatus> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-    });
+    const user = await this.getCurrentUser(userId);
 
     if (!user) {
       throw new ForbiddenException({
@@ -141,15 +135,9 @@ export class UserService {
       });
     }
     const newUser = { ...user, refreshToken: '' };
-    await this.userRepository.save(newUser);
+    await this.userRepository.update(user.id, newUser);
     return {
       ok: true,
     };
-  }
-
-  async getCurrentUser(currentUserId: number): Promise<UserEntity> {
-    return await this.userRepository.findOne({
-      where: { id: currentUserId },
-    });
   }
 }
