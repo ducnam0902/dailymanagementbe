@@ -29,15 +29,9 @@ export class NoteController {
     @User() user: UserEntity,
   ): Promise<ResponseCreatedData> {
     const response = await this.noteService.createNote(user, createNoteDto);
-    if (response?.id) {
-      return {
-        ok: true,
-      };
-    }
-
     return {
-      ok: false,
-    };
+      ok: !!response?.id
+    }
   }
 
   @Get(':date')
