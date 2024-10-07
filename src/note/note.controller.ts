@@ -16,6 +16,7 @@ import { User } from 'src/user/decorators/user.decorator';
 import { UserEntity } from 'src/user/user.entity';
 import { NoteEntity } from './note.entity';
 import { ResponseCreatedData } from 'src/utils';
+import { CurrentWeekDto } from './dto/CurrentWeekDto';
 
 @Controller('note')
 export class NoteController {
@@ -36,7 +37,7 @@ export class NoteController {
 
   @Get(':date')
   @UseGuards(AuthGuard)
-  async getAllNote(
+  async getAllNoteByDate(
     @User('id') userId: number,
     @Param('date') date: string,
   ): Promise<NoteEntity[]> {
@@ -50,5 +51,12 @@ export class NoteController {
     @Param('noteId') noteId: number,
   ): Promise<NoteEntity> {
     return await this.noteService.completeNote(userId, noteId);
+  }
+
+  @Post('/getByWeek')
+  @UseGuards(AuthGuard)
+  @UsePipes(new CustomValidationResponse())
+  async getNotesByWeek (@Body() currentWeek: CurrentWeekDto, @User('id') userId: number): Promise<NoteEntity[]> {
+    return await this.noteService.getNoteByWeek(currentWeek.startDate, currentWeek.endDate, userId);
   }
 }
