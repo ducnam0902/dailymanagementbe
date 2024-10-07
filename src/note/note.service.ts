@@ -4,8 +4,8 @@ import { NoteEntity } from './note.entity';
 import { Repository } from 'typeorm';
 import { CreateNoteDto } from './dto/CreateNoteDto';
 import { UserEntity } from 'src/user/user.entity';
-import { Raw } from "typeorm"
-
+import { Raw } from 'typeorm';
+import { Between } from 'typeorm';
 @Injectable()
 export class NoteService {
   constructor(
@@ -36,9 +36,8 @@ export class NoteService {
         user: false,
       },
       order: {
-        isCompleted: 'ASC'
-      }
-      
+        isCompleted: 'ASC',
+      },
     });
     return response;
   }
@@ -63,7 +62,29 @@ export class NoteService {
       isCompleted: true,
     };
 
-    await this.noteRepository.update(existedNote.id, { isCompleted: true});
+    await this.noteRepository.update(existedNote.id, { isCompleted: true });
     return completedNote;
+  }
+
+  async getNoteByWeek(
+    startDate: string,
+    endDate: string,
+    userId: number,
+  ): Promise<NoteEntity[]> {
+    const startedDate = new Date(startDate);
+    const endedDate = new Date(endDate);
+    const response = await this.noteRepository.find({
+      where: {
+        createdAt: Between(startedDate.toISOString(), endedDate.toISOString()),
+        user: {
+          id: userId,
+        },
+      },
+      relations: {
+        user: false,
+      },
+    });
+    
+    return response;
   }
 }
