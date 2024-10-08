@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateNoteDto } from './dto/CreateNoteDto';
 import { UserEntity } from 'src/user/user.entity';
 import { Raw } from 'typeorm';
-import { Between } from 'typeorm';
+
 @Injectable()
 export class NoteService {
   constructor(
@@ -27,7 +27,7 @@ export class NoteService {
   async getNote(userId: number, date: string): Promise<NoteEntity[]> {
     const response = await this.noteRepository.find({
       where: {
-        createdAt: Raw((alias) => `${alias} >= :date`, { date }),
+        dateCreated: Raw((alias) => `${alias} = :date`, { date }),
         user: {
           id: userId,
         },
@@ -71,11 +71,9 @@ export class NoteService {
     endDate: string,
     userId: number,
   ): Promise<NoteEntity[]> {
-    const startedDate = new Date(startDate);
-    const endedDate = new Date(endDate);
     const response = await this.noteRepository.find({
       where: {
-        createdAt: Between(startedDate.toISOString(), endedDate.toISOString()),
+        dateCreated: Raw((alias) => `${alias} >= :startDate AND ${alias} <= :endDate`, { startDate, endDate }),
         user: {
           id: userId,
         },
