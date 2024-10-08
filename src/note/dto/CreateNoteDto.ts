@@ -7,4 +7,7 @@ export class CreateNoteDto {
 
   @IsNotEmpty({ message: 'Note type is required field' })
   readonly type: NoteType;
+
+  @IsNotEmpty({ message: 'Date created is required field' })
+  readonly dateCreated: string;
 }

@@ -20,6 +20,9 @@ export class NoteEntity {
   @Column({ default: false })
   isCompleted: boolean;
 
+  @Column({ default: '' })
+  dateCreated: string;
+  
   @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
   createdAt: string;
   
