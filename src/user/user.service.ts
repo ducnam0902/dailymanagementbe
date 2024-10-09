@@ -13,6 +13,8 @@ import { CreateUserDto } from './dto/CreateUserDto';
 import { LoginUserDto } from './dto/LoginUser.dto';
 import { JwtToken, UserResponse } from './types/UserResponse.interface';
 import { UserLogoutStatus } from './types/UserType';
+import { MailService } from 'src/mail/mail.service';
+import envConfig from 'src/utils/config';
 
 @Injectable()
 export class UserService {
@@ -21,6 +23,7 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     private readonly dataSource: DataSource,
     private jwtService: JwtService,
+    private readonly mailService: MailService
   ) {}
 
   async getCurrentUser(currentUserId: number): Promise<UserEntity> {
@@ -42,6 +45,7 @@ export class UserService {
     if (!user) {
       Object.assign(newUser, createUserDto);
       const data = await this.userRepository.insert(newUser);
+      await this.mailService.sendEmailRegisterSuccessfully(newUser);
       return data.raw[0];
     } else {
       throw new ConflictException({
@@ -75,7 +79,7 @@ export class UserService {
       });
     }
     const token = await this.generateJwt(user);
-    await this.userRepository.update(user.id, {refreshToken:  token.refreshToken});
+    await this.userRepository.update(user.id, {refreshToken: token.refreshToken});
     return {
       ...user,
       ...token,
@@ -89,12 +93,12 @@ export class UserService {
     };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {
-        expiresIn: process.env.ACCESS_KEY_EXPIRATION,
-        secret: process.env.ACCESS_KEY_SECRET,
+        expiresIn: envConfig.ACCESS_KEY_EXPIRATION,
+        secret: envConfig.ACCESS_KEY_SECRET,
       }),
       this.jwtService.signAsync(jwtPayload, {
-        secret: process.env.REFRESH_KEY_EXPIRATION,
-        expiresIn: process.env.REFRESH_KEY_EXPIRATION,
+        secret: envConfig.REFRESH_KEY_EXPIRATION,
+        expiresIn: envConfig.REFRESH_KEY_EXPIRATION,
       }),
     ]);
     return { accessToken, refreshToken };
@@ -112,7 +116,7 @@ export class UserService {
     }
 
     const verifyUser = await this.jwtService.verifyAsync(token, {
-      secret: process.env.REFRESH_KEY_EXPIRATION,
+      secret: envConfig.REFRESH_KEY_EXPIRATION,
     });
 
     if (verifyUser.id !== user.id) {

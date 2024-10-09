@@ -1,13 +1,12 @@
-import 'dotenv/config';
 import { DataSourceOptions } from 'typeorm';
-
+import envConfig from './utils/config';
 const config: DataSourceOptions = {
   type: 'postgres',
-  host: process.env.POSTGRES_HOST,
+  host: envConfig.POSTGRES_HOST,
   port: 5432,
-  username: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  database: process.env.POSTGRES_DATABASE,
+  username: envConfig.POSTGRES_USER,
+  password: envConfig.POSTGRES_PASSWORD,
+  database: envConfig.POSTGRES_DATABASE,
   entities: [__dirname + '/**/*.entity{.ts,.js}'],
   synchronize: false,
   migrations: [__dirname + '/migrations/**/*{.ts,.js}'],

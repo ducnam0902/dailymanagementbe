@@ -24,6 +24,7 @@ import { AuthGuard } from './guards/auth.guards';
 import { UserLogoutStatus, UserType } from './types/UserType';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import envConfig from 'src/utils/config';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -104,7 +105,7 @@ export class UserController {
       throw new BadRequestException('File is not an image');
     } else {
       const response = {
-        filePath: `${process.env.PUBLIC_API_ENDPOINT}/user/image/${file.filename}`,
+        filePath: `${envConfig.PUBLIC_API_ENDPOINT}/user/image/${file.filename}`,
       };
       return response;
     }
