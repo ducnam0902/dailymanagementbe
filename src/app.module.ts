@@ -9,6 +9,7 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { NoteModule } from './note/note.module';
+import { MailModule } from './mail/mail.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,6 +22,7 @@ import { NoteModule } from './note/note.module';
       global: true,
     }),
     NoteModule,
+    MailModule,
   ],
   controllers: [],
   providers: [
