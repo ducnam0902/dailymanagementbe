@@ -1,0 +1,26 @@
+{
+  "image": "http://localhost:3000/logo.png",
+  "name": "Rey",
+  "completedTask": [
+      {
+        "note": "Brush my teeth",
+        "isCompleted": true
+      },
+      {
+        "note": "Get up at 6 AM",
+        "isCompleted": true
+      }
+  ],
+  "incompletedTask": [
+    {
+      "note": "Brush my teeth",
+      "isCompleted": false
+    },
+    {
+      "note": "Get up at 6 AM",
+      "isCompleted": false
+    }
+],
+  "isFinishedAllTask": false,
+  "iconCheck": "a"
+}

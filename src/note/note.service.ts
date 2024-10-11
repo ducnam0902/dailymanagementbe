@@ -5,13 +5,62 @@ import { Repository } from 'typeorm';
 import { CreateNoteDto } from './dto/CreateNoteDto';
 import { UserEntity } from 'src/user/user.entity';
 import { Raw } from 'typeorm';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { MailService } from 'src/mail/mail.service';
+import * as moment from "moment";
 
 @Injectable()
 export class NoteService {
   constructor(
     @InjectRepository(NoteEntity)
     private readonly noteRepository: Repository<NoteEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+    private readonly mailService: MailService,
   ) {}
+
+  @Cron(CronExpression.EVERY_DAY_AT_9PM)
+  async handleSendNoteUncompleted() {
+    const today = moment().format('YYYY-MM-DD');
+    const response = await this.noteRepository.find({
+      where: {
+        dateCreated: today
+      },
+      loadRelationIds: true,
+      relations: ['user'],
+      order: {
+        user: {
+          id: 'DESC',
+        },
+        isCompleted: 'ASC'
+      }
+    })
+    const noteByUserList = response.reduce((prevNote, currNote) => {
+      const id = currNote.user.toString();
+      if(Object.keys(prevNote).includes(id)) {
+        return {
+          ...prevNote,
+          [id] : [
+            ...prevNote[id],
+            currNote
+          ]
+        }
+      };
+      return {
+        ...prevNote,
+        [id]: [currNote]
+      };
+    }, {});
+
+    Object.keys(noteByUserList).forEach(async (item) => {
+      const user = await this.userRepository.findOne({
+        where: {
+          id: Number(item)
+        }
+      });
+      await this.mailService.sendEmailNoteIsNotCompleted(noteByUserList[item], user);
+    })
+  }
 
   async createNote(
     user: UserEntity,
@@ -56,12 +105,10 @@ export class NoteService {
         message: 'Note is exists',
       });
     }
-
     const completedNote: NoteEntity = {
       ...existedNote,
       isCompleted: true,
     };
-
     await this.noteRepository.update(existedNote.id, { isCompleted: true });
     return completedNote;
   }
@@ -81,6 +128,10 @@ export class NoteService {
       relations: {
         user: false,
       },
+      order: {
+        dateCreated: 'ASC',
+        isCompleted: 'ASC'
+      }
     });
     
     return response;
