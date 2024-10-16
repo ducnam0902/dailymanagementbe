@@ -15,8 +15,7 @@ import envConfig from 'src/utils/config';
           pass: envConfig.EMAIL_PASSWORD,
         },
       },
-      defaults: {
-      },
+      defaults: {},
       template: {
         dir: join(__dirname, 'templates'),
         adapter: new HandlebarsAdapter(),
