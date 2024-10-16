@@ -7,7 +7,7 @@
     <h4>I hope your weekend is going well!</h4>
     {{#if isFinishedAllTask }}
     <p>You've completed all the task today.</p>
-    <p style="line-height: 1.5;">Below are the tasks that you have completed:</p>
+    <p style="line-height: 1.5;">Let's check our achievements today:</p>
     <ol>
         {{#each completedTask}}
         <li style="line-height: 1.5;color: green">{{this.note}}
@@ -15,7 +15,7 @@
         {{/each}}
     </ol>
     <p style="line-height: 1.5;"> A habit cannot be tossed out the window; it must be coaxed down the stairs a step at a
-        time. -Mark Twain </p>
+        time. - Mark Twain </p>
     {{else}}
     <p>I want to inform you that you have some remaining tasks that need to be done today. </p>
     <p style="line-height: 1.5;">Please quickly check the incomplete tasks below and mark them as completed if you have
@@ -38,7 +38,7 @@
     </p>
     <p style="line-height: 1.5;">Feeling sorry for yourself, and your present condition is not only a waste of energy
         but the worst habit you
-        could possibly have. -Dale Carnegie</p>
+        could possibly have. - Dale Carnegie</p>
     {{/if}}
     {{/if}}
     <p>Thank you and best regards,</p>
