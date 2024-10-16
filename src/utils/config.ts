@@ -16,7 +16,6 @@ const configSchema = z.object({
   EMAIL_HOST: z.string(),
   EMAIL_USERNAME: z.string(),
   EMAIL_PASSWORD: z.string(),
-  EMAIL_ADDRESS: z.string(),
 });
 
 const configProject = configSchema.safeParse({
@@ -34,7 +33,6 @@ const configProject = configSchema.safeParse({
   EMAIL_HOST: process.env.EMAIL_HOST,
   EMAIL_USERNAME: process.env.EMAIL_USERNAME,
   EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
-  EMAIL_ADDRESS: process.env.EMAIL_ADDRESS,
 });
 
 if (!configProject.success) {
