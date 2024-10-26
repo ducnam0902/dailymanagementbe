@@ -37,7 +37,7 @@ export class UserController {
     const response = await this.userService.createUser(createUserDto);
     return {
       ok: !!response.id,
-    }
+    };
   }
 
   @Post('/login')

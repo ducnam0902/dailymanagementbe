@@ -7,7 +7,7 @@ import { UserEntity } from 'src/user/user.entity';
 import { Raw } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MailService } from 'src/mail/mail.service';
-import * as moment from "moment";
+import * as moment from 'moment';
 
 @Injectable()
 export class NoteService {
@@ -24,7 +24,7 @@ export class NoteService {
     const today = moment().format('YYYY-MM-DD');
     const response = await this.noteRepository.find({
       where: {
-        dateCreated: today
+        dateCreated: today,
       },
       loadRelationIds: true,
       relations: ['user'],
@@ -32,34 +32,34 @@ export class NoteService {
         user: {
           id: 'DESC',
         },
-        isCompleted: 'ASC'
-      }
-    })
+        isCompleted: 'ASC',
+      },
+    });
     const noteByUserList = response.reduce((prevNote, currNote) => {
       const id = currNote.user.toString();
-      if(Object.keys(prevNote).includes(id)) {
+      if (Object.keys(prevNote).includes(id)) {
         return {
           ...prevNote,
-          [id] : [
-            ...prevNote[id],
-            currNote
-          ]
-        }
-      };
+          [id]: [...prevNote[id], currNote],
+        };
+      }
       return {
         ...prevNote,
-        [id]: [currNote]
+        [id]: [currNote],
       };
     }, {});
 
     Object.keys(noteByUserList).forEach(async (item) => {
       const user = await this.userRepository.findOne({
         where: {
-          id: Number(item)
-        }
+          id: Number(item),
+        },
       });
-      await this.mailService.sendEmailNoteIsNotCompleted(noteByUserList[item], user);
-    })
+      await this.mailService.sendEmailNoteIsNotCompleted(
+        noteByUserList[item],
+        user,
+      );
+    });
   }
 
   async createNote(
@@ -120,7 +120,10 @@ export class NoteService {
   ): Promise<NoteEntity[]> {
     const response = await this.noteRepository.find({
       where: {
-        dateCreated: Raw((alias) => `${alias} >= :startDate AND ${alias} <= :endDate`, { startDate, endDate }),
+        dateCreated: Raw(
+          (alias) => `${alias} >= :startDate AND ${alias} <= :endDate`,
+          { startDate, endDate },
+        ),
         user: {
           id: userId,
         },
@@ -130,10 +133,22 @@ export class NoteService {
       },
       order: {
         dateCreated: 'ASC',
-        isCompleted: 'ASC'
-      }
+        isCompleted: 'ASC',
+      },
     });
-    
+
     return response;
+  }
+
+  async completeNotes(
+    userId: number,
+    noteIdList: string[],
+  ): Promise<NoteEntity[]> {
+    const updatedNotes = Promise.all(
+      noteIdList.map(async (item) => {
+        return await this.completeNote(userId, Number(item));
+      }),
+    );
+    return updatedNotes;
   }
 }
