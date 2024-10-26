@@ -23,7 +23,7 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     private readonly dataSource: DataSource,
     private jwtService: JwtService,
-    private readonly mailService: MailService
+    private readonly mailService: MailService,
   ) {}
 
   async getCurrentUser(currentUserId: number): Promise<UserEntity> {
@@ -32,9 +32,7 @@ export class UserService {
     });
   }
 
-  async createUser(
-    createUserDto: CreateUserDto,
-  ): Promise<UserEntity> {
+  async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
     const newUser = new UserEntity();
     const user = await this.userRepository.findOne({
       where: {
@@ -79,7 +77,9 @@ export class UserService {
       });
     }
     const token = await this.generateJwt(user);
-    await this.userRepository.update(user.id, {refreshToken: token.refreshToken});
+    await this.userRepository.update(user.id, {
+      refreshToken: token.refreshToken,
+    });
     return {
       ...user,
       ...token,
@@ -126,7 +126,9 @@ export class UserService {
     }
 
     const newToken = await this.generateJwt(user);
-    await this.userRepository.update(user.id, { refreshToken: newToken.refreshToken});
+    await this.userRepository.update(user.id, {
+      refreshToken: newToken.refreshToken,
+    });
     return newToken;
   }
 

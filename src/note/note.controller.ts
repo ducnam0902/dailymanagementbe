@@ -31,8 +31,8 @@ export class NoteController {
   ): Promise<ResponseCreatedData> {
     const response = await this.noteService.createNote(user, createNoteDto);
     return {
-      ok: !!response?.id
-    }
+      ok: !!response?.id,
+    };
   }
 
   @Get(':date')
@@ -56,7 +56,26 @@ export class NoteController {
   @Post('/getByWeek')
   @UseGuards(AuthGuard)
   @UsePipes(new CustomValidationResponse())
-  async getNotesByWeek (@Body() currentWeek: CurrentWeekDto, @User('id') userId: number): Promise<NoteEntity[]> {
-    return await this.noteService.getNoteByWeek(currentWeek.startDate, currentWeek.endDate, userId);
+  async getNotesByWeek(
+    @Body() currentWeek: CurrentWeekDto,
+    @User('id') userId: number,
+  ): Promise<NoteEntity[]> {
+    return await this.noteService.getNoteByWeek(
+      currentWeek.startDate,
+      currentWeek.endDate,
+      userId,
+    );
+  }
+
+  @Post('/markCompleted')
+  @UseGuards(AuthGuard)
+  async markCompletedNote(
+    @User('id') userId: number,
+    @Body() noteIdList: string[],
+  ): Promise<ResponseCreatedData> {
+    const response = await this.noteService.completeNotes(userId, noteIdList);
+    return {
+      ok: response.length === noteIdList.length,
+    };
   }
 }
