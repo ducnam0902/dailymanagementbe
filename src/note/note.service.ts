@@ -19,7 +19,9 @@ export class NoteService {
     private readonly mailService: MailService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_9PM)
+  @Cron(CronExpression.EVERY_DAY_AT_9PM, {
+    timeZone: 'Asia/Ho_Chi_Minh',
+  })
   async handleSendNoteUncompleted() {
     const today = moment().format('YYYY-MM-DD');
     const response = await this.noteRepository.find({
