@@ -8,7 +8,7 @@ import { AuthMiddleware } from './user/middlewares/auth.middleware';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './http-exception.filter';
-import { NoteModule } from './note/note.module';
+import { TaskModule } from './task/task.module';
 import { MailModule } from './mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static/dist/serve-static.module';
@@ -25,7 +25,7 @@ import { join } from 'path';
     JwtModule.register({
       global: true,
     }),
-    NoteModule,
+    TaskModule,
     MailModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),

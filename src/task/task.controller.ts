@@ -1,7 +1,7 @@
-import { AuthGuard } from './../user/guards/auth.guards';
+import { AuthGuard } from '../user/guards/auth.guards';
 import { CustomValidationResponse } from 'src/shared/pipes/CustomValidationResponse.pipe';
-import { CreateNoteDto } from './dto/CreateNoteDto';
-import { NoteService } from './note.service';
+import { CreateTaskDto } from './dto/CreateTaskDto';
+import { TaskService } from './task.service';
 import {
   Body,
   Controller,
@@ -14,22 +14,22 @@ import {
 } from '@nestjs/common';
 import { User } from 'src/user/decorators/user.decorator';
 import { UserEntity } from 'src/user/user.entity';
-import { NoteEntity } from './note.entity';
+import { TaskEntity } from './task.entity';
 import { ResponseCreatedData } from 'src/utils';
 import { CurrentWeekDto } from './dto/CurrentWeekDto';
 
-@Controller('note')
-export class NoteController {
-  constructor(private readonly noteService: NoteService) {}
+@Controller('task')
+export class TaskController {
+  constructor(private readonly taskService: TaskService) {}
 
   @Post()
   @UseGuards(AuthGuard)
   @UsePipes(new CustomValidationResponse())
-  async createNote(
-    @Body() createNoteDto: CreateNoteDto,
+  async createTask(
+    @Body() createTaskDto: CreateTaskDto,
     @User() user: UserEntity,
   ): Promise<ResponseCreatedData> {
-    const response = await this.noteService.createNote(user, createNoteDto);
+    const response = await this.taskService.createTask(user, createTaskDto);
     return {
       ok: !!response?.id,
     };
@@ -37,30 +37,30 @@ export class NoteController {
 
   @Get(':date')
   @UseGuards(AuthGuard)
-  async getAllNoteByDate(
+  async getAllTaskByDate(
     @User('id') userId: number,
     @Param('date') date: string,
-  ): Promise<NoteEntity[]> {
-    return await this.noteService.getNote(userId, date);
+  ): Promise<TaskEntity[]> {
+    return await this.taskService.getTask(userId, date);
   }
 
-  @Put(':noteId')
+  @Put(':taskId')
   @UseGuards(AuthGuard)
-  async completedNote(
+  async completedTask(
     @User('id') userId: number,
-    @Param('noteId') noteId: number,
-  ): Promise<NoteEntity> {
-    return await this.noteService.completeNote(userId, noteId);
+    @Param('taskId') taskId: number,
+  ): Promise<TaskEntity> {
+    return await this.taskService.completeTask(userId, taskId);
   }
 
   @Post('/getByWeek')
   @UseGuards(AuthGuard)
   @UsePipes(new CustomValidationResponse())
-  async getNotesByWeek(
+  async getTasksByWeek(
     @Body() currentWeek: CurrentWeekDto,
     @User('id') userId: number,
-  ): Promise<NoteEntity[]> {
-    return await this.noteService.getNoteByWeek(
+  ): Promise<TaskEntity[]> {
+    return await this.taskService.getTaskByWeek(
       currentWeek.startDate,
       currentWeek.endDate,
       userId,
@@ -69,13 +69,13 @@ export class NoteController {
 
   @Post('/markCompleted')
   @UseGuards(AuthGuard)
-  async markCompletedNote(
+  async markCompletedTask(
     @User('id') userId: number,
-    @Body() noteIdList: string[],
+    @Body() taskIdList: string[],
   ): Promise<ResponseCreatedData> {
-    const response = await this.noteService.completeNotes(userId, noteIdList);
+    const response = await this.taskService.completeTasks(userId, taskIdList);
     return {
-      ok: response.length === noteIdList.length,
+      ok: response.length === taskIdList.length,
     };
   }
 }

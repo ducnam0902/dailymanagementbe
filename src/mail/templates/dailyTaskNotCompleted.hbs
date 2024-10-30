@@ -10,7 +10,7 @@
     <p style="line-height: 1.5;">Let's check our achievements today:</p>
     <ol>
         {{#each completedTask}}
-        <li style="line-height: 1.5;color: green">{{this.note}}
+        <li style="line-height: 1.5;color: green">{{this.task}}
         </li>
         {{/each}}
     </ol>
@@ -22,7 +22,7 @@
         already finished them:</p>
     <ol>
         {{#each incompletedTask}}
-        <li style="line-height: 1.5;color: red">{{this.note}}
+        <li style="line-height: 1.5;color: red">{{this.task}}
         </li>
         {{/each}}
     </ol>
@@ -30,7 +30,7 @@
     <p style="line-height: 1.5;">Below are the tasks that you have completed:</p>
     <ol>
         {{#each completedTask}}
-        <li style="line-height: 1.5;color: green">{{this.note}}
+        <li style="line-height: 1.5;color: green">{{this.task}}
         </li>
         {{/each}}
     </ol>

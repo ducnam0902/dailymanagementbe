@@ -1,4 +1,4 @@
-export type NoteType =
+export type TaskType =
   | 'Activities'
   | 'Development'
   | 'New Routine'
