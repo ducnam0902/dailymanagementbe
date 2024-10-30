@@ -1,7 +1,7 @@
+import { TaskEntity } from './../task/task.entity';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import * as moment from 'moment';
-import { NoteEntity } from 'src/note/note.entity';
 import { UserEntity } from 'src/user/user.entity';
 import envConfig from 'src/utils/config';
 @Injectable()
@@ -23,7 +23,7 @@ export class MailService {
     });
   }
 
-  async sendEmailNoteIsNotCompleted(task: NoteEntity[], user: UserEntity) {
+  async sendEmailTaskIsNotCompleted(task: TaskEntity[], user: UserEntity) {
     const isFinishedAllTasks = task.every((item) => item.isCompleted);
     const incompletedTask = task.filter((item) => !item.isCompleted);
     const completedTask = task.filter((item) => item.isCompleted);
@@ -38,7 +38,7 @@ export class MailService {
       },
       to: user.email,
       subject: subject + ' | Daily Management Application',
-      template: './dailyNoteNotCompleted',
+      template: './dailyTaskNotCompleted',
       context: {
         name: user.firstName + ' ' + user.lastName,
         image: envConfig.PUBLIC_API_ENDPOINT + '/logo.png',

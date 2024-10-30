@@ -1,8 +1,8 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { NoteEntity } from './note.entity';
+import { TaskEntity } from './task.entity';
 import { Repository } from 'typeorm';
-import { CreateNoteDto } from './dto/CreateNoteDto';
+import { CreateTaskDto } from './dto/CreateTaskDto';
 import { UserEntity } from 'src/user/user.entity';
 import { Raw } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -10,10 +10,10 @@ import { MailService } from 'src/mail/mail.service';
 import * as moment from 'moment';
 
 @Injectable()
-export class NoteService {
+export class TaskService {
   constructor(
-    @InjectRepository(NoteEntity)
-    private readonly noteRepository: Repository<NoteEntity>,
+    @InjectRepository(TaskEntity)
+    private readonly taskRepository: Repository<TaskEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly mailService: MailService,
@@ -22,9 +22,9 @@ export class NoteService {
   @Cron(CronExpression.EVERY_DAY_AT_9PM, {
     timeZone: 'Asia/Ho_Chi_Minh',
   })
-  async handleSendNoteUncompleted() {
+  async handleSendTaskUncompleted() {
     const today = moment().format('YYYY-MM-DD');
-    const response = await this.noteRepository.find({
+    const response = await this.taskRepository.find({
       where: {
         dateCreated: today,
       },
@@ -37,46 +37,46 @@ export class NoteService {
         isCompleted: 'ASC',
       },
     });
-    const noteByUserList = response.reduce((prevNote, currNote) => {
-      const id = currNote.user.toString();
-      if (Object.keys(prevNote).includes(id)) {
+    const taskByUserList = response.reduce((prevTask, currTask) => {
+      const id = currTask.user.toString();
+      if (Object.keys(prevTask).includes(id)) {
         return {
-          ...prevNote,
-          [id]: [...prevNote[id], currNote],
+          ...prevTask,
+          [id]: [...prevTask[id], currTask],
         };
       }
       return {
-        ...prevNote,
-        [id]: [currNote],
+        ...prevTask,
+        [id]: [currTask],
       };
     }, {});
 
-    Object.keys(noteByUserList).forEach(async (item) => {
+    Object.keys(taskByUserList).forEach(async (item) => {
       const user = await this.userRepository.findOne({
         where: {
           id: Number(item),
         },
       });
-      await this.mailService.sendEmailNoteIsNotCompleted(
-        noteByUserList[item],
+      await this.mailService.sendEmailTaskIsNotCompleted(
+        taskByUserList[item],
         user,
       );
     });
   }
 
-  async createNote(
+  async createTask(
     user: UserEntity,
-    createNoteDto: CreateNoteDto,
-  ): Promise<NoteEntity> {
-    const newNote = new NoteEntity();
-    Object.assign(newNote, createNoteDto);
-    newNote.user = user;
-    const data = await this.noteRepository.insert(newNote);
+    CreateTaskDto: CreateTaskDto,
+  ): Promise<TaskEntity> {
+    const newTask = new TaskEntity();
+    Object.assign(newTask, CreateTaskDto);
+    newTask.user = user;
+    const data = await this.taskRepository.insert(newTask);
     return data.raw[0];
   }
 
-  async getNote(userId: number, date: string): Promise<NoteEntity[]> {
-    const response = await this.noteRepository.find({
+  async getTask(userId: number, date: string): Promise<TaskEntity[]> {
+    const response = await this.taskRepository.find({
       where: {
         dateCreated: Raw((alias) => `${alias} = :date`, { date }),
         user: {
@@ -93,34 +93,34 @@ export class NoteService {
     return response;
   }
 
-  async completeNote(userId: number, noteId: number): Promise<NoteEntity> {
-    const existedNote: NoteEntity = await this.noteRepository.findOne({
+  async completeTask(userId: number, taskId: number): Promise<TaskEntity> {
+    const existedTask: TaskEntity = await this.taskRepository.findOne({
       where: {
-        id: noteId,
+        id: taskId,
         user: {
           id: userId,
         },
       },
     });
-    if (!existedNote) {
+    if (!existedTask) {
       throw new UnprocessableEntityException({
-        message: 'Note is exists',
+        message: 'Task is exists',
       });
     }
-    const completedNote: NoteEntity = {
-      ...existedNote,
+    const completedTask: TaskEntity = {
+      ...existedTask,
       isCompleted: true,
     };
-    await this.noteRepository.update(existedNote.id, { isCompleted: true });
-    return completedNote;
+    await this.taskRepository.update(existedTask.id, { isCompleted: true });
+    return completedTask;
   }
 
-  async getNoteByWeek(
+  async getTaskByWeek(
     startDate: string,
     endDate: string,
     userId: number,
-  ): Promise<NoteEntity[]> {
-    const response = await this.noteRepository.find({
+  ): Promise<TaskEntity[]> {
+    const response = await this.taskRepository.find({
       where: {
         dateCreated: Raw(
           (alias) => `${alias} >= :startDate AND ${alias} <= :endDate`,
@@ -142,15 +142,15 @@ export class NoteService {
     return response;
   }
 
-  async completeNotes(
+  async completeTasks(
     userId: number,
-    noteIdList: string[],
-  ): Promise<NoteEntity[]> {
-    const updatedNotes = Promise.all(
-      noteIdList.map(async (item) => {
-        return await this.completeNote(userId, Number(item));
+    taskIdList: string[],
+  ): Promise<TaskEntity[]> {
+    const updatedTasks = Promise.all(
+      taskIdList.map(async (item) => {
+        return await this.completeTask(userId, Number(item));
       }),
     );
-    return updatedNotes;
+    return updatedTasks;
   }
 }

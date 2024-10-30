@@ -5,28 +5,35 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
-import { NoteType } from './types/noteType';
+import { TaskType } from './types/taskType';
 
-@Entity({ name: 'note' })
-export class NoteEntity {
+@Entity({ name: 'task' })
+export class TaskEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ default: '' })
-  note: string;
+  task: string;
 
   @Column({ default: false })
   isCompleted: boolean;
 
   @Column({ default: '' })
   dateCreated: string;
-  
-  @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
   createdAt: string;
-  
-  @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
   updatedAt: string;
 
   @Column({
@@ -40,8 +47,8 @@ export class NoteEntity {
       'Other',
     ],
   })
-  type: NoteType;
+  type: TaskType;
 
-  @ManyToOne(() => UserEntity, (user) => user.notes)
+  @ManyToOne(() => UserEntity, (user) => user.tasks)
   user: UserEntity;
 }

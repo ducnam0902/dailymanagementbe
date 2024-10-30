@@ -3,21 +3,21 @@
   "name": "Rey",
   "completedTask": [
       {
-        "note": "Brush my teeth",
+        "task": "Brush my teeth",
         "isCompleted": true
       },
       {
-        "note": "Get up at 6 AM",
+        "task": "Get up at 6 AM",
         "isCompleted": true
       }
   ],
   "incompletedTask": [
     {
-      "note": "Brush my teeth",
+      "task": "Brush my teeth",
       "isCompleted": false
     },
     {
-      "note": "Get up at 6 AM",
+      "task": "Get up at 6 AM",
       "isCompleted": false
     }
 ],
