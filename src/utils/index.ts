@@ -10,3 +10,7 @@ export const cookieOptions: CookieOptions = {
 export type ResponseCreatedData = {
   ok: boolean;
 };
+
+export type ResponseOKData = {
+  ok: boolean;
+};

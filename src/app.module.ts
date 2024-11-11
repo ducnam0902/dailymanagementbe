@@ -13,6 +13,7 @@ import { MailModule } from './mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static/dist/serve-static.module';
 import { join } from 'path';
+import { SchedulesModule } from './schedules/schedules.module';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -30,6 +31,7 @@ import { join } from 'path';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
+    SchedulesModule,
   ],
   controllers: [],
   providers: [

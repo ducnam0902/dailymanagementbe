@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { hash } from 'bcrypt';
+import { ScheduleEntity } from 'src/schedules/schedule.entity';
 @Entity({ name: 'users' })
 export class UserEntity {
   @PrimaryGeneratedColumn()
@@ -37,4 +38,7 @@ export class UserEntity {
 
   @OneToMany(() => TaskEntity, (task) => task.user)
   tasks: TaskEntity[];
+
+  @OneToMany(() => ScheduleEntity, (schedules) => schedules.user)
+  schedules: ScheduleEntity[];
 }
