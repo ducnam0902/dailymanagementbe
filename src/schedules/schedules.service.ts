@@ -83,7 +83,7 @@ export class SchedulesService {
     return removedItem;
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS, {
+  @Cron(CronExpression.EVERY_DAY_AT_1AM, {
     timeZone: 'Asia/Ho_Chi_Minh',
   })
   async handleCreateTasksFollowSchedule() {

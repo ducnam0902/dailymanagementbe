@@ -1,0 +1,17 @@
+<div style="background-color: 2 3 4 5 #f5f6f7; padding-top:50px; padding-bottom:50px;"></div>
+<div style="background-color: #fff; padding: 20px;margin-left: auto; margin-right:auto; line-height: 1.5">
+    <div style="border-bottom: 1px solid #eee; display:block; margin-bottom:30px;"> <img src={{ image }}
+            style="width: 100px; margin-top: 15px; margin-bottom: 10px;"></img> </div>
+    <h2>Good morning <span style="font-weight: bold;">{{ name }}</span>,</h2>
+    <h3 style="font-size: 16px; font-weight:normal">Your future is created by what you do today, not tomorrow!</h3>
+    <h4 style="font-size: 16px; font-weight:normal">Please figure out task lists today: </h4>
+    <ol>
+        {{#each task}}
+        <li style="line-height: 1.5;">{{this.task}} </li>
+        {{/each}}
+    </ol>
+    <p style="font-size: 16px">The time for action is now. It's never too late to do something</p>
+    <p style="font-size: 16px">Thank you and best regards,</p>
+    <p style="font-size: 18px; font-weight:bold">Daily Management</p>
+</div>
+</div>
