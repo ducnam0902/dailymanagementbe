@@ -30,7 +30,7 @@ export class MailService {
     const today = moment().format('DD-MMM-YYYY');
     const subject = isFinishedAllTasks
       ? `Congratulation! You have completed all tasks on ${today}`
-      : `Reminder: You have remaining tasks that need to be done by the end of ${today}`;
+      : `You have remaining tasks that need to be done by the end of ${today}`;
     await this.mailerService.sendMail({
       from: {
         name: 'Daily Management Team',
@@ -46,6 +46,25 @@ export class MailService {
         haveTaskCompleted: completedTask.length !== 0,
         completedTask: completedTask,
         isFinishedAllTask: isFinishedAllTasks,
+      },
+    });
+  }
+
+  async sendEmailTaskToday(task: TaskEntity[], user: UserEntity) {
+    const today = moment().format('DD-MMM-YYYY');
+    const subject = `The future depends on what you do today ${today}`;
+    await this.mailerService.sendMail({
+      from: {
+        name: 'Daily Management Team',
+        address: envConfig.EMAIL_USERNAME,
+      },
+      to: user.email,
+      subject: subject + '| Daily Management Application',
+      template: './dailyTask',
+      context: {
+        name: user.firstName + ' ' + user.lastName,
+        image: envConfig.PUBLIC_API_ENDPOINT + '/logo.png',
+        task: task,
       },
     });
   }

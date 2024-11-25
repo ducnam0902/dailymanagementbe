@@ -153,4 +153,46 @@ export class TaskService {
     );
     return updatedTasks;
   }
+
+  @Cron(CronExpression.EVERY_DAY_AT_6AM, {
+    timeZone: 'Asia/Ho_Chi_Minh',
+  })
+  async handleSendTaskToday() {
+    const today = moment().format('YYYY-MM-DD');
+    const response = await this.taskRepository.find({
+      where: {
+        dateCreated: today,
+      },
+      loadRelationIds: true,
+      relations: ['user'],
+      order: {
+        user: {
+          id: 'DESC',
+        },
+      },
+    });
+
+    const taskByUserList = response.reduce((prevTask, currTask) => {
+      const id = currTask.user.toString();
+      if (Object.keys(prevTask).includes(id)) {
+        return {
+          ...prevTask,
+          [id]: [...prevTask[id], currTask],
+        };
+      }
+      return {
+        ...prevTask,
+        [id]: [currTask],
+      };
+    }, {});
+
+    Object.keys(taskByUserList).forEach(async (item) => {
+      const user = await this.userRepository.findOne({
+        where: {
+          id: Number(item),
+        },
+      });
+      await this.mailService.sendEmailTaskToday(taskByUserList[item], user);
+    });
+  }
 }

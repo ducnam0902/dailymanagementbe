@@ -1,0 +1,14 @@
+{
+    "name": "Obi-Wan",
+    "image": "http://localhost:3000/logo.png",
+    "task": [
+        {
+            "task": "Brush my teeth",
+            "isCompleted": false
+          },
+          {
+            "task": "Get up at 6 AM",
+            "isCompleted": false
+          }
+    ]
+}
