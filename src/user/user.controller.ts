@@ -13,18 +13,18 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/CreateUserDto';
-import { CustomValidationResponse } from 'src/shared/pipes/CustomValidationResponse.pipe';
+import { CustomValidationResponse } from '../shared/pipes/CustomValidationResponse.pipe';
 import { LoginUserDto } from './dto/LoginUser.dto';
 import { UserResponse } from './types/UserResponse.interface';
 import { Response } from 'express';
 import { Cookies } from './decorators/cookie.decorator';
 import { User } from './decorators/user.decorator';
-import { cookieOptions, ResponseCreatedData } from 'src/utils';
+import { cookieOptions, ResponseCreatedData } from '../utils';
 import { AuthGuard } from './guards/auth.guards';
 import { UserLogoutStatus, UserType } from './types/UserType';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import envConfig from 'src/utils/config';
+import envConfig from '../utils/config';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -83,7 +83,7 @@ export class UserController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './uploads',
+        destination: '/tmp',
         filename: (req, file, cb) => {
           const name = file.originalname.split('.')[0];
           const fileExtension = file.originalname.split('.')[1];
@@ -114,7 +114,7 @@ export class UserController {
   @Get('image/:filename')
   async getPicture(@Param('filename') filename, @Res() res: Response) {
     res.sendFile(filename, {
-      root: './uploads',
+      root: '/tmp',
     });
   }
 }

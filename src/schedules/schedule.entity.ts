@@ -1,4 +1,4 @@
-import { UserEntity } from 'src/user/user.entity';
+import { UserEntity } from '../user/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TaskType } from 'src/task/types/taskType';
+import { TaskType } from '../task/types/taskType';
 import { RepeatType } from './types/repeatType';
 
 @Entity({ name: 'schedule' })

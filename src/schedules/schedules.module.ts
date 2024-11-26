@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { SchedulesService } from './schedules.service';
 import { SchedulesController } from './schedules.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from 'src/user/user.entity';
+import { UserEntity } from '../user/user.entity';
 import { ScheduleEntity } from './schedule.entity';
-import { TaskModule } from 'src/task/task.module';
-import { TaskEntity } from 'src/task/task.entity';
+import { TaskModule } from '../task/task.module';
+import { TaskEntity } from '../task/task.entity';
 
 @Module({
   imports: [

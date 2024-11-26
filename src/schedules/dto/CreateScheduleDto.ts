@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, MinLength } from 'class-validator';
-import { TaskType } from 'src/task/types/taskType';
+import { TaskType } from '../../task/types/taskType';
 import { RepeatType } from '../types/repeatType';
 
 export enum TaskTypeEnum {

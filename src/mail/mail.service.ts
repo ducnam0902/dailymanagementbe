@@ -1,9 +1,9 @@
 import { TaskEntity } from './../task/task.entity';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import * as moment from 'moment';
-import { UserEntity } from 'src/user/user.entity';
-import envConfig from 'src/utils/config';
+import moment from 'moment';
+import { UserEntity } from '../user/user.entity';
+import envConfig from '../utils/config';
 @Injectable()
 export class MailService {
   constructor(private mailerService: MailerService) {}

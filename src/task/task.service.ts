@@ -3,11 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TaskEntity } from './task.entity';
 import { Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/CreateTaskDto';
-import { UserEntity } from 'src/user/user.entity';
+import { UserEntity } from '../user/user.entity';
 import { Raw } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { MailService } from 'src/mail/mail.service';
-import * as moment from 'moment';
+import { MailService } from '../mail/mail.service';
+import moment from 'moment';
 
 @Injectable()
 export class TaskService {

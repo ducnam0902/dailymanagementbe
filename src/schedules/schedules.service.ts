@@ -1,14 +1,14 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from 'src/user/user.entity';
+import { UserEntity } from '../user/user.entity';
 import { Not, Raw, Repository } from 'typeorm';
 import { ScheduleEntity } from './schedule.entity';
 import { CreateScheduleDto } from './dto/CreateScheduleDto';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import * as moment from 'moment';
-import { weekdays } from 'src/utils';
-import { TaskService } from 'src/task/task.service';
-import { TaskEntity } from 'src/task/task.entity';
+import moment from 'moment';
+import { weekdays } from '../utils';
+import { TaskService } from '../task/task.service';
+import { TaskEntity } from '../task/task.entity';
 @Injectable()
 export class SchedulesService {
   constructor(
@@ -83,10 +83,11 @@ export class SchedulesService {
     return removedItem;
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_1AM, {
+  @Cron(CronExpression.EVERY_DAY_AT_2PM, {
     timeZone: 'Asia/Ho_Chi_Minh',
   })
   async handleCreateTasksFollowSchedule() {
+    console.log('show create task');
     const today = moment().format('YYYY-MM-DD');
     const response = await this.scheduleRepository.find({
       where: {
@@ -95,7 +96,7 @@ export class SchedulesService {
       },
       relations: ['user'],
     });
-
+    console.log(response);
     response.forEach(async (item: ScheduleEntity) => {
       if (item.repeatType === 'Weekly') {
         const weekDay = weekdays[moment(today).isoWeekday()];

@@ -1,5 +1,5 @@
 import { AuthGuard } from '../user/guards/auth.guards';
-import { CustomValidationResponse } from 'src/shared/pipes/CustomValidationResponse.pipe';
+import { CustomValidationResponse } from '../shared/pipes/CustomValidationResponse.pipe';
 import { CreateTaskDto } from './dto/CreateTaskDto';
 import { TaskService } from './task.service';
 import {
@@ -12,10 +12,10 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
-import { User } from 'src/user/decorators/user.decorator';
-import { UserEntity } from 'src/user/user.entity';
+import { User } from '../user/decorators/user.decorator';
+import { UserEntity } from '../user/user.entity';
 import { TaskEntity } from './task.entity';
-import { ResponseCreatedData } from 'src/utils';
+import { ResponseCreatedData } from '../utils';
 import { CurrentWeekDto } from './dto/CurrentWeekDto';
 
 @Controller('task')

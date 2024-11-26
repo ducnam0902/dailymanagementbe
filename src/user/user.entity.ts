@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { hash } from 'bcrypt';
-import { ScheduleEntity } from 'src/schedules/schedule.entity';
+import { ScheduleEntity } from '../schedules/schedule.entity';
 @Entity({ name: 'users' })
 export class UserEntity {
   @PrimaryGeneratedColumn()

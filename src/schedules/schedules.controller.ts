@@ -10,11 +10,11 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { SchedulesService } from './schedules.service';
-import { AuthGuard } from 'src/user/guards/auth.guards';
-import { CustomValidationResponse } from 'src/shared/pipes/CustomValidationResponse.pipe';
-import { ResponseCreatedData, ResponseOKData } from 'src/utils';
-import { User } from 'src/user/decorators/user.decorator';
-import { UserEntity } from 'src/user/user.entity';
+import { AuthGuard } from '../user/guards/auth.guards';
+import { CustomValidationResponse } from '../shared/pipes/CustomValidationResponse.pipe';
+import { ResponseCreatedData, ResponseOKData } from '../utils';
+import { User } from '../user/decorators/user.decorator';
+import { UserEntity } from '../user/user.entity';
 import { CreateScheduleDto } from './dto/CreateScheduleDto';
 import { ScheduleEntity } from './schedule.entity';
 import { UpdateScheduleDto } from './dto/UpdateScheduleDto';

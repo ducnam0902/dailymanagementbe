@@ -1,4 +1,4 @@
-import { TaskType } from 'src/task/types/taskType';
+import { TaskType } from '../../task/types/taskType';
 import { RepeatTypeEnum, TaskTypeEnum } from './CreateScheduleDto';
 import { RepeatType } from '../types/repeatType';
 import { IsEnum, IsOptional, MinLength } from 'class-validator';

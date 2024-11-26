@@ -13,9 +13,8 @@ import { CreateUserDto } from './dto/CreateUserDto';
 import { LoginUserDto } from './dto/LoginUser.dto';
 import { JwtToken, UserResponse } from './types/UserResponse.interface';
 import { UserLogoutStatus } from './types/UserType';
-import { MailService } from 'src/mail/mail.service';
-import envConfig from 'src/utils/config';
-
+import { MailService } from '../mail/mail.service';
+import envConfig from '../utils/config';
 @Injectable()
 export class UserService {
   constructor(
