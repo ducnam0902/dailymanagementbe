@@ -95,7 +95,7 @@ export class SchedulesService {
       },
       relations: ['user'],
     });
-    consosle.log('all task for today', response);
+    console.log('all task for today', response);
     response.forEach(async (item: ScheduleEntity) => {
       if (item.repeatType === 'Weekly') {
         const weekDay = weekdays[moment(today).isoWeekday()];
