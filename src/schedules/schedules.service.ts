@@ -83,7 +83,7 @@ export class SchedulesService {
     return removedItem;
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_3PM, {
+  @Cron(CronExpression.EVERY_DAY_AT_1AM, {
     timeZone: 'Asia/Ho_Chi_Minh',
   })
   async handleCreateTasksFollowSchedule() {
@@ -95,7 +95,6 @@ export class SchedulesService {
       },
       relations: ['user'],
     });
-    console.log('all task for today', response);
     response.forEach(async (item: ScheduleEntity) => {
       if (item.repeatType === 'Weekly') {
         const weekDay = weekdays[moment(today).isoWeekday()];
