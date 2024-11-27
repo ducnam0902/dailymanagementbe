@@ -5,10 +5,11 @@ import { Not, Raw, Repository } from 'typeorm';
 import { ScheduleEntity } from './schedule.entity';
 import { CreateScheduleDto } from './dto/CreateScheduleDto';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import * as moment from 'moment';
+import getDateInCurrentTimezone from 'src/utils/time';
 import { weekdays } from 'src/utils';
 import { TaskService } from 'src/task/task.service';
 import { TaskEntity } from 'src/task/task.entity';
+import * as moment from 'moment';
 @Injectable()
 export class SchedulesService {
   constructor(
@@ -87,7 +88,7 @@ export class SchedulesService {
     timeZone: 'Asia/Ho_Chi_Minh',
   })
   async handleCreateTasksFollowSchedule() {
-    const today = moment().format('YYYY-MM-DD');
+    const today = getDateInCurrentTimezone(null, 'YYYY-MM-DD');
     const response = await this.scheduleRepository.find({
       where: {
         repeatType: Not('Off'),
@@ -95,6 +96,7 @@ export class SchedulesService {
       },
       relations: ['user'],
     });
+
     response.forEach(async (item: ScheduleEntity) => {
       if (item.repeatType === 'Weekly') {
         const weekDay = weekdays[moment(today).isoWeekday()];
@@ -134,7 +136,7 @@ export class SchedulesService {
               task: item.task,
               type: item.type,
               dateCreated: Raw((alias) => `${alias} >= :startedDate`, {
-                startedDate: dateSearch,
+                startedDate: getDateInCurrentTimezone(dateSearch, 'YYYY-MM-DD'),
               }),
             },
           });
@@ -144,7 +146,6 @@ export class SchedulesService {
               ? item.startedAt
               : dateGeneratedBefore,
           ).add(2, 'days');
-
           if (expectedDateGenerated.diff(moment(today)) === 0) {
             await this.taskServices.createTask(item.user, {
               task: item.task,

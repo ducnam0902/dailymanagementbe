@@ -7,7 +7,7 @@ import { UserEntity } from 'src/user/user.entity';
 import { Raw } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MailService } from 'src/mail/mail.service';
-import * as moment from 'moment';
+import getDateInCurrentTimezone from 'src/utils/time';
 
 @Injectable()
 export class TaskService {
@@ -23,7 +23,7 @@ export class TaskService {
     timeZone: 'Asia/Ho_Chi_Minh',
   })
   async handleSendTaskUncompleted() {
-    const today = moment().format('YYYY-MM-DD');
+    const today = getDateInCurrentTimezone(null, 'YYYY-MM-DD');
     const response = await this.taskRepository.find({
       where: {
         dateCreated: today,
@@ -158,7 +158,7 @@ export class TaskService {
     timeZone: 'Asia/Ho_Chi_Minh',
   })
   async handleSendTaskToday() {
-    const today = moment().format('YYYY-MM-DD');
+    const today = getDateInCurrentTimezone(null, 'YYYY-MM-DD');
     const response = await this.taskRepository.find({
       where: {
         dateCreated: today,

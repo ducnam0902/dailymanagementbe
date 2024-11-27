@@ -1,9 +1,10 @@
 import { TaskEntity } from './../task/task.entity';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import * as moment from 'moment';
 import { UserEntity } from 'src/user/user.entity';
 import envConfig from 'src/utils/config';
+import getDateInCurrentTimezone from 'src/utils/time';
+
 @Injectable()
 export class MailService {
   constructor(private mailerService: MailerService) {}
@@ -27,7 +28,7 @@ export class MailService {
     const isFinishedAllTasks = task.every((item) => item.isCompleted);
     const incompletedTask = task.filter((item) => !item.isCompleted);
     const completedTask = task.filter((item) => item.isCompleted);
-    const today = moment().format('DD-MMM-YYYY');
+    const today = getDateInCurrentTimezone();
     const subject = isFinishedAllTasks
       ? `Congratulation! You have completed all tasks on ${today}`
       : `You have remaining tasks that need to be done by the end of ${today}`;
@@ -51,8 +52,8 @@ export class MailService {
   }
 
   async sendEmailTaskToday(task: TaskEntity[], user: UserEntity) {
-    const today = moment().format('DD-MMM-YYYY');
-    const subject = `The future depends on what you do today ${today}`;
+    const today = getDateInCurrentTimezone();
+    const subject = `The future depends on what you do today ${today} `;
     await this.mailerService.sendMail({
       from: {
         name: 'Daily Management Team',
