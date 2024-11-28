@@ -89,6 +89,7 @@ export class SchedulesService {
   })
   async handleCreateTasksFollowSchedule() {
     const today = getDateInCurrentTimezone(null, 'YYYY-MM-DD');
+    console.log('today', today);
     const response = await this.scheduleRepository.find({
       where: {
         repeatType: Not('Off'),
