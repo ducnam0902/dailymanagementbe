@@ -11,11 +11,11 @@ export class MailService {
   async sendEmailRegisterSuccessfully(user: UserEntity) {
     await this.mailerService.sendMail({
       from: {
-        name: 'Daily Management Team',
+        name: 'Daily Management',
         address: envConfig.EMAIL_USERNAME,
       },
       to: user.email,
-      subject: 'Welcome to Daily Management App! Register Successfully',
+      subject: 'Welcome to Daily Management! Register Successfully',
       template: './confirmation',
       context: {
         name: user.firstName + ' ' + user.lastName,
@@ -30,11 +30,11 @@ export class MailService {
     const completedTask = task.filter((item) => item.isCompleted);
     const today = getDateInCurrentTimezone();
     const subject = isFinishedAllTasks
-      ? `Congratulation! You have completed all tasks on ${today}`
-      : `You have remaining tasks that need to be done by the end of ${today}`;
+      ? `[CONGRATULATIIONS - ${today} ] - Finished all tasks`
+      : `[TAKE ACTION - ${today}] - Remaining tasks`;
     await this.mailerService.sendMail({
       from: {
-        name: 'Daily Management Team',
+        name: 'Daily Management',
         address: envConfig.EMAIL_USERNAME,
       },
       to: user.email,
@@ -52,11 +52,11 @@ export class MailService {
   }
 
   async sendEmailTaskToday(task: TaskEntity[], user: UserEntity) {
-    const today = getDateInCurrentTimezone();
-    const subject = `The future depends on what you do today ${today} `;
+    const today = getDateInCurrentTimezone(null, 'DD MMMM YYYY');
+    const subject = `[${today}] Start a new day with your tasks!`;
     await this.mailerService.sendMail({
       from: {
-        name: 'Daily Management Team',
+        name: 'Daily Management',
         address: envConfig.EMAIL_USERNAME,
       },
       to: user.email,
