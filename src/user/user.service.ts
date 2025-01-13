@@ -66,10 +66,9 @@ export class UserService {
       });
     }
 
-    const isPasswordCorrect = await compare(
-      loginUserDto.password,
-      user.password,
-    );
+    const { password, ...dataUser } = user;
+
+    const isPasswordCorrect = await compare(loginUserDto.password, password);
 
     if (!isPasswordCorrect) {
       throw new UnauthorizedException({
@@ -81,7 +80,7 @@ export class UserService {
       refreshToken: token.refreshToken,
     });
     return {
-      ...user,
+      ...dataUser,
       ...token,
     };
   }

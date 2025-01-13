@@ -8,3 +8,5 @@ export interface UserResponse {
 }
 
 export type JwtToken = Pick<UserResponse, 'accessToken' | 'refreshToken'>;
+
+export type RefreshToken = Pick<UserResponse, 'refreshToken'>;

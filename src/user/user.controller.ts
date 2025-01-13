@@ -15,9 +15,12 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/CreateUserDto';
 import { CustomValidationResponse } from 'src/shared/pipes/CustomValidationResponse.pipe';
 import { LoginUserDto } from './dto/LoginUser.dto';
-import { UserResponse } from './types/UserResponse.interface';
+import {
+  JwtToken,
+  RefreshToken,
+  UserResponse,
+} from './types/UserResponse.interface';
 import { Response } from 'express';
-import { Cookies } from './decorators/cookie.decorator';
 import { User } from './decorators/user.decorator';
 import { cookieOptions, ResponseCreatedData } from 'src/utils';
 import { AuthGuard } from './guards/auth.guards';
@@ -51,14 +54,14 @@ export class UserController {
     return userToken;
   }
 
-  @Get('/refresh')
+  @Post('/refresh')
   async refreshToken(
-    @Cookies('refreshToken') refreshToken: string,
+    @Body() body: RefreshToken,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<Pick<UserResponse, 'accessToken'>> {
-    const token = await this.userService.refreshToken(refreshToken);
+  ): Promise<JwtToken> {
+    const token = await this.userService.refreshToken(body.refreshToken);
     response.cookie('refreshToken', token.refreshToken, cookieOptions);
-    return { accessToken: token.accessToken };
+    return { accessToken: token.accessToken, refreshToken: token.refreshToken };
   }
 
   @Get('/logout')
