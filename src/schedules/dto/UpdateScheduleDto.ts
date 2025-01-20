@@ -1,5 +1,5 @@
-import { TaskType } from 'src/task/types/taskType';
-import { RepeatTypeEnum, TaskTypeEnum } from './CreateScheduleDto';
+import { TaskType, TaskTypeEnum } from 'src/task/types/taskType';
+import { RepeatTypeEnum } from './CreateScheduleDto';
 import { RepeatType } from '../types/repeatType';
 import { IsEnum, IsOptional, MinLength } from 'class-validator';
 

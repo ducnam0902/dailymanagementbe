@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TaskType } from './types/taskType';
+import { TaskType, TaskTypeEnum } from './types/taskType';
 
 @Entity({ name: 'task' })
 export class TaskEntity {
@@ -38,14 +38,7 @@ export class TaskEntity {
 
   @Column({
     type: 'enum',
-    enum: [
-      'Activities',
-      'Development',
-      'New Routine',
-      'Planning',
-      'Shopping',
-      'Other',
-    ],
+    enum: TaskTypeEnum,
   })
   type: TaskType;
 

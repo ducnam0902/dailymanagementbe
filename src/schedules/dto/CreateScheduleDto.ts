@@ -1,15 +1,6 @@
 import { IsEnum, IsNotEmpty, MinLength } from 'class-validator';
-import { TaskType } from 'src/task/types/taskType';
+import { TaskType, TaskTypeEnum } from 'src/task/types/taskType';
 import { RepeatType } from '../types/repeatType';
-
-export enum TaskTypeEnum {
-  'Activities',
-  'Development',
-  'New Routine',
-  'Planning',
-  'Shopping',
-  'Other',
-}
 
 export enum RepeatTypeEnum {
   'Daily',
