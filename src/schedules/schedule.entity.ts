@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TaskType } from 'src/task/types/taskType';
+import { TaskType, TaskTypeEnum } from 'src/task/types/taskType';
 import { RepeatType } from './types/repeatType';
 
 @Entity({ name: 'schedule' })
@@ -36,14 +36,7 @@ export class ScheduleEntity {
 
   @Column({
     type: 'enum',
-    enum: [
-      'Activities',
-      'Development',
-      'New Routine',
-      'Planning',
-      'Shopping',
-      'Other',
-    ],
+    enum: Object.values(TaskTypeEnum),
   })
   type: TaskType;
 

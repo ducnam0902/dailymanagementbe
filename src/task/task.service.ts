@@ -69,6 +69,7 @@ export class TaskService {
     CreateTaskDto: CreateTaskDto,
   ): Promise<TaskEntity> {
     const newTask = new TaskEntity();
+    console.log(CreateTaskDto);
     Object.assign(newTask, CreateTaskDto);
     newTask.user = user;
     const data = await this.taskRepository.insert(newTask);
