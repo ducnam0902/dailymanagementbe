@@ -1,15 +1,16 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'src/user/user.entity';
-import { Not, Raw, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ScheduleEntity } from './schedule.entity';
 import { CreateScheduleDto } from './dto/CreateScheduleDto';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import getDateInCurrentTimezone from 'src/utils/time';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { weekdays } from 'src/utils';
 import { TaskService } from 'src/task/task.service';
 import { TaskEntity } from 'src/task/task.entity';
+import { CronJob } from 'cron';
 import * as moment from 'moment';
+import { randomUUID } from 'crypto';
 @Injectable()
 export class SchedulesService {
   constructor(
@@ -20,18 +21,8 @@ export class SchedulesService {
     private readonly taskServices: TaskService,
     @InjectRepository(TaskEntity)
     private readonly taskRepository: Repository<TaskEntity>,
+    private schedulerRegistry: SchedulerRegistry,
   ) {}
-
-  async createSchedule(
-    createSchedule: CreateScheduleDto,
-    user: UserEntity,
-  ): Promise<ScheduleEntity> {
-    const newSchedule = new ScheduleEntity();
-    Object.assign(newSchedule, createSchedule);
-    newSchedule.user = user;
-    const data = await this.scheduleRepository.insert(newSchedule);
-    return data.raw[0];
-  }
 
   async getSchedulesListByUser(user: UserEntity): Promise<ScheduleEntity[]> {
     const reponse = this.scheduleRepository.find({
@@ -44,6 +35,107 @@ export class SchedulesService {
     return reponse;
   }
 
+  checkGenerateTask(schedule: ScheduleEntity): boolean {
+    const { startedAt, repeatEach, repeatType } = schedule;
+
+    const today = moment(new Date());
+    const startedAtDate = moment(new Date(startedAt));
+    const isToday = today.diff(startedAtDate, 'days') === 0;
+
+    const isRepeatDaily = repeatType === 'Daily';
+    const isRepeatMonthly = repeatType === 'Monthly';
+    const isRepeatWeekly = repeatType === 'Weekly';
+
+    const weekDay = weekdays[moment(today).isoWeekday()];
+    const weekDayLists = isRepeatWeekly ? repeatEach.split(', ') : [];
+
+    //Case = today with each repeat type
+    if (
+      isToday &&
+      (isRepeatDaily ||
+        isRepeatMonthly ||
+        (isRepeatWeekly && weekDayLists.includes(weekDay)))
+    ) {
+      return true;
+    }
+
+    const isTodayGreaterThan = today.diff(startedAtDate, 'days') > 0;
+    const gapBetweenDate = today.diff(startedAtDate, 'days');
+
+    //Case > today with repeat type weekly
+    if (
+      isTodayGreaterThan &&
+      isRepeatWeekly &&
+      weekDayLists.includes(weekDay)
+    ) {
+      return true;
+    }
+
+    // Case > today with repeat type daily
+    if (
+      isTodayGreaterThan &&
+      isRepeatDaily &&
+      gapBetweenDate % Number(repeatEach) === 0
+    ) {
+      return true;
+    }
+
+    // Case > today with repeat type monthly
+    const gapBetweenYear =
+      Number(today.get('year')) - Number(startedAtDate.get('year'));
+    const gapBetweenMonth =
+      Number(today.get('month')) - Number(startedAtDate.get('month'));
+
+    if (
+      isRepeatMonthly &&
+      isTodayGreaterThan &&
+      (12 * gapBetweenYear + gapBetweenMonth) % Number(repeatEach) === 0 &&
+      today.get('date') === startedAtDate.get('date')
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  async addScheduleJob(schedule: ScheduleEntity): Promise<string> {
+    const nameJob: string = randomUUID();
+    const generatedTime = schedule.generatedAt.split(':');
+    const cronTime: string = `0 ${generatedTime[1]} ${generatedTime[0]} * * *`;
+    const job = new CronJob(
+      cronTime,
+      async () => {
+        const isGeneratedTask = this.checkGenerateTask(schedule);
+        if (isGeneratedTask) {
+          await this.taskServices.createTask(schedule.user, {
+            task: schedule.task,
+            type: schedule.type,
+            dateCreated: moment(new Date()).format('YYYY-MM-DD'),
+          });
+        }
+      },
+      null,
+      true,
+      schedule.timezone,
+    );
+    await this.schedulerRegistry.addCronJob(nameJob, job);
+    await job.start();
+    return nameJob;
+  }
+
+  async createSchedule(
+    createSchedule: CreateScheduleDto,
+    user: UserEntity,
+  ): Promise<ScheduleEntity> {
+    const newSchedule = new ScheduleEntity();
+    Object.assign(newSchedule, createSchedule);
+    newSchedule.user = user;
+    const nameJob = await this.addScheduleJob(newSchedule);
+    newSchedule.nameJob = nameJob;
+    const data = await this.scheduleRepository.insert(newSchedule);
+    return data.raw[0];
+  }
+
   async updateSchedule(
     updateSchedule: CreateScheduleDto,
     scheduleId: number,
@@ -52,6 +144,7 @@ export class SchedulesService {
       where: {
         id: scheduleId,
       },
+      relations: ['user'],
     });
     if (!currentSchedules) {
       throw new UnprocessableEntityException({
@@ -64,6 +157,19 @@ export class SchedulesService {
       ...updateSchedule,
     };
 
+    const existsJob = this.schedulerRegistry.doesExist(
+      'cron',
+      currentSchedules.nameJob,
+    );
+    if (existsJob) {
+      const job = this.schedulerRegistry.getCronJob(currentSchedules.nameJob);
+      job.stop();
+      await this.schedulerRegistry.deleteCronJob(currentSchedules.nameJob);
+    }
+
+    const nameJob = await this.addScheduleJob(newSchedule);
+    newSchedule.nameJob = nameJob;
+
     await this.scheduleRepository.update(scheduleId, newSchedule);
     return newSchedule;
   }
@@ -74,104 +180,21 @@ export class SchedulesService {
         id: scheduleId,
       },
     });
-    if (!currentSchedules) {
+    const existsJob = this.schedulerRegistry.doesExist(
+      'cron',
+      currentSchedules.nameJob,
+    );
+    if (!currentSchedules || !existsJob) {
       throw new UnprocessableEntityException({
         message: 'Schedule is not exists',
       });
     }
 
+    if (existsJob) {
+      await this.schedulerRegistry.deleteCronJob(currentSchedules.nameJob);
+    }
+
     const removedItem = await this.scheduleRepository.remove(currentSchedules);
     return removedItem;
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_1AM, {
-    timeZone: 'Asia/Ho_Chi_Minh',
-  })
-  async handleCreateTasksFollowSchedule() {
-    const today = getDateInCurrentTimezone(null, 'YYYY-MM-DD');
-    console.log('today', today);
-    const response = await this.scheduleRepository.find({
-      where: {
-        repeatType: Not('Off'),
-        startedAt: Raw((alias) => `${alias} <= :today`, { today }),
-      },
-      relations: ['user'],
-    });
-
-    response.forEach(async (item: ScheduleEntity) => {
-      if (item.repeatType === 'Weekly') {
-        const weekDay = weekdays[moment(today).isoWeekday()];
-        const repeatEachDayInWeek = item.repeatEach.split(', ');
-        if (repeatEachDayInWeek.includes(weekDay)) {
-          await this.taskServices.createTask(item.user, {
-            task: item.task,
-            type: item.type,
-            dateCreated: today,
-          });
-        }
-      }
-
-      if (item.repeatType === 'Daily') {
-        if (
-          item.repeatEach === '1' ||
-          moment(item.startedAt).diff(moment(today)) === 0
-        ) {
-          await this.taskServices.createTask(item.user, {
-            task: item.task,
-            type: item.type,
-            dateCreated: today,
-          });
-        } else {
-          const dateGeneratedBefore = moment(today).subtract(
-            item.repeatEach,
-            'days',
-          );
-
-          const dateSearch =
-            dateGeneratedBefore.diff(moment(item.startedAt)) < 0
-              ? item.startedAt
-              : dateGeneratedBefore;
-
-          const taskGeneratedBefore = await this.taskRepository.find({
-            where: {
-              task: item.task,
-              type: item.type,
-              dateCreated: Raw((alias) => `${alias} >= :startedDate`, {
-                startedDate: getDateInCurrentTimezone(dateSearch, 'YYYY-MM-DD'),
-              }),
-            },
-          });
-
-          const expectedDateGenerated = moment(
-            taskGeneratedBefore.length === 0
-              ? item.startedAt
-              : dateGeneratedBefore,
-          ).add(2, 'days');
-          if (expectedDateGenerated.diff(moment(today)) === 0) {
-            await this.taskServices.createTask(item.user, {
-              task: item.task,
-              type: item.type,
-              dateCreated: today,
-            });
-          }
-        }
-      }
-
-      if ((item.repeatType = 'Monthly')) {
-        // if (moment(item.startedAt).diff(moment(today)) === 0) {
-        //   await this.taskServices.createTask(item.user, {
-        //     task: item.task,
-        //     type: item.type,
-        //     dateCreated: today,
-        //   });
-        // }
-        // const todayMoment = moment();
-        // const startOfMonth = todayMoment.startOf('months');
-        // const endOfMonth = todayMoment.endOf('months');
-        // console.log('todayMoment', todayMoment);
-        // console.log('startOfMonth', startOfMonth);
-        // console.log('endOfMonth', endOfMonth);
-      }
-    });
   }
 }

@@ -49,6 +49,15 @@ export class ScheduleEntity {
   @Column({ default: '' })
   repeatEach: string;
 
+  @Column({ default: '' })
+  generatedAt: string;
+
+  @Column({ default: '' })
+  timezone: string;
+
+  @Column({ default: '' })
+  nameJob: string;
+
   @ManyToOne(() => UserEntity, (user) => user.schedules)
   user: UserEntity;
 }
