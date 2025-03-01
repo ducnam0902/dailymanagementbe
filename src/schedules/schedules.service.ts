@@ -101,10 +101,16 @@ export class SchedulesService {
   async addScheduleJob(schedule: ScheduleEntity): Promise<string> {
     const nameJob: string = randomUUID();
     const generatedTime = schedule.generatedAt.split(':');
-    const cronTime: string = `0 ${generatedTime[1]} ${generatedTime[0]} * * *`;
+    const cronTime: string = `${generatedTime[1]} ${generatedTime[0]} * * *`;
+    console.log(cronTime);
     const job = new CronJob(
       cronTime,
       async () => {
+        console.log(cronTime);
+        console.log(
+          'Generated at',
+          moment(new Date()).format('DD-MM-YYYY HH:mm:ss.SSS'),
+        );
         const isGeneratedTask = this.checkGenerateTask(schedule);
         if (isGeneratedTask) {
           await this.taskServices.createTask(schedule.user, {
